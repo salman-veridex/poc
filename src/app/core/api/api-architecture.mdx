@@ -1,0 +1,89 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Architecture & Guides/Reusable API Architecture" />
+
+# Veridex Reusable API Architecture Guide
+
+> **Core Rule:** Feature services and components must **never** inject `HttpClient` directly. All HTTP traffic flows through `ApiService.httpRequest<T>()`.
+
+---
+
+## 1. Quick Start Guide
+
+Import `ApiService`, `APIMethod`, and domain endpoints directly from `@core/api`:
+
+```typescript
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService, APIMethod, APIResponseType, ProductEndpoint } from '@core/api';
+import { InsuranceProduct } from '../models/product.models';
+
+@Injectable({ providedIn: 'root' })
+export class ProductService {
+  private readonly api = inject(ApiService);
+
+  // 1. GET with query parameters
+  getProducts(search: string, page = 1): Observable<InsuranceProduct[]> {
+    return this.api.httpRequest<InsuranceProduct[]>(
+      ProductEndpoint.LIST,
+      APIMethod.GET,
+      {
+        params: { search, page, pageSize: 20, active: true }
+      }
+    );
+  }
+
+  // 2. POST with Body Payload
+  createProduct(product: Partial<InsuranceProduct>): Observable<InsuranceProduct> {
+    return this.api.httpRequest<InsuranceProduct>(
+      ProductEndpoint.CREATE,
+      APIMethod.POST,
+      {
+        body: product
+      }
+    );
+  }
+
+  // 3. Binary Blob / PDF Document Download
+  downloadDocument(policyId: string, docId: string): Observable<Blob> {
+    return this.api.httpRequest<Blob>(
+      `policies/documents/download/${policyId}/${docId}`,
+      APIMethod.GET,
+      {
+        responseType: APIResponseType.BLOB
+      }
+    );
+  }
+}
+```
+
+---
+
+## 2. API Layer Architecture Files
+
+The API layer is centralized in `src/app/core/api/`:
+
+| File | Purpose |
+| :--- | :--- |
+| `api.service.ts` | Centralized `ApiService` exposing `httpRequest<T>()` |
+| `api.endpoints.ts` | Strongly-typed endpoint enums (`ProductEndpoint`, `PolicyEndpoint`, `ClaimsEndpoint`, `AuthEndpoint`...) |
+| `api-method.enum.ts` | `APIMethod` enum, `APIResponseType` enum, and `ApiRequestOptions` interface |
+| `api-response.model.ts` | Standardized `ApiResponse<T>` and `PagedResponse<T>` models |
+| `index.ts` | Clean barrel export (`@core/api`) |
+
+---
+
+## 3. Supported HTTP Methods & Response Types
+
+### HTTP Verbs (`APIMethod`)
+* `APIMethod.GET`
+* `APIMethod.POST`
+* `APIMethod.PUT`
+* `APIMethod.PATCH`
+* `APIMethod.DELETE`
+
+### Response Types (`APIResponseType`)
+* `APIResponseType.JSON` (Default)
+* `APIResponseType.BLOB` (PDF, Excel, Images)
+* `APIResponseType.TEXT` (CSV, Plain text)
+* `APIResponseType.ARRAY_BUFFER` (Binary streams)

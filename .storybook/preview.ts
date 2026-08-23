@@ -1,0 +1,31 @@
+import { provideZonelessChangeDetection } from '@angular/core';
+import type { Preview } from '@storybook/angular';
+import { applicationConfig } from '@storybook/angular';
+
+const preview: Preview = {
+  decorators: [
+    applicationConfig({
+      providers: [
+        provideZonelessChangeDetection()
+      ]
+    })
+  ],
+  parameters: {
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i
+      }
+    },
+    backgrounds: {
+      default: 'light',
+      values: [
+        { name: 'light', value: '#f8fafc' },
+        { name: 'white', value: '#ffffff' },
+        { name: 'dark', value: '#0f172a' }
+      ]
+    }
+  }
+};
+
+export default preview;

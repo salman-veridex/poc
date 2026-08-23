@@ -39,6 +39,13 @@ testem.log
 /typings
 __screenshots__/
 
+# Storybook & Compodoc build artifacts
+/storybook-static
+/documentation
+documentation.json
+debug-storybook.log
+
 # System files
 .DS_Store
 Thumbs.db
+
