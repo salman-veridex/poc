@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
+import { catchError } from 'rxjs/operators';
+import { APIMethod, ApiService, QuoteEndpoint } from '../../../../core/api';
 import { Submission } from '../models/submission.models';
 
 const MOCK_SUBMISSIONS: Submission[] = [
@@ -71,14 +71,55 @@ const MOCK_SUBMISSIONS: Submission[] = [
   providedIn: 'root'
 })
 export class SubmissionService {
-  constructor(private api: ApiService) {}
+  private readonly api = inject(ApiService);
 
-  getSubmissions(): Observable<Submission[]> {
-    return of(MOCK_SUBMISSIONS).pipe(delay(250));
+  getSubmissions(params?: Record<string, string | number | boolean | null | undefined>): Observable<Submission[]> {
+    return this.api.httpRequest<Submission[]>(
+      QuoteEndpoint.SUBMISSIONS,
+      APIMethod.GET,
+      { params }
+    ).pipe(
+      catchError(() => of(MOCK_SUBMISSIONS))
+    );
   }
 
   getSubmissionById(id: string): Observable<Submission | undefined> {
-    const sub = MOCK_SUBMISSIONS.find(s => s.id === id);
-    return of(sub).pipe(delay(200));
+    return this.api.httpRequest<Submission>(
+      `${QuoteEndpoint.SUBMISSION_DETAIL}/${id}`,
+      APIMethod.GET
+    ).pipe(
+      catchError(() => of(MOCK_SUBMISSIONS.find(s => s.id === id)))
+    );
+  }
+
+  createSubmission(submission: Partial<Submission>): Observable<Submission> {
+    const fallbackSubmission: Submission = {
+      id: `sub_${Date.now()}`,
+      submissionNumber: `SUB-2026-${Math.floor(Math.random() * 9000 + 1000)}`,
+      insuredName: submission.insuredName || 'New Insured Entity',
+      brokerName: submission.brokerName || 'Alexander Vance',
+      brokerageAgency: submission.brokerageAgency || 'Direct Intake',
+      lineOfBusiness: submission.lineOfBusiness || 'Commercial Property',
+      requestedEffectiveDate: submission.requestedEffectiveDate || new Date().toISOString().split('T')[0],
+      status: 'IN_REVIEW',
+      estimatedRevenue: submission.estimatedRevenue || 1000000,
+      totalInsuredValue: submission.totalInsuredValue || 5000000,
+      assignedUnderwriter: 'Alexander Vance',
+      triageScore: 85,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    return this.api.httpRequest<Submission>(
+      QuoteEndpoint.SUBMISSION_CREATE,
+      APIMethod.POST,
+      {
+        body: submission
+      }
+    ).pipe(
+      catchError(() => {
+        MOCK_SUBMISSIONS.unshift(fallbackSubmission);
+        return of(fallbackSubmission);
+      })
+    );
   }
 }

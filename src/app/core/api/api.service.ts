@@ -1,58 +1,104 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse, PagedResponse, QueryParams } from './api-response.model';
+import { environment } from '../../../environments/environment';
+import { APIMethod, APIResponseType, ApiRequestOptions } from './api-method.enum';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.apiBaseUrl;
 
-  get<T>(url: string, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = this.buildHttpParams(params);
-    return this.http.get<T>(url, { params: httpParams });
+  /**
+   * Main unified API request method.
+   *
+   * Usage:
+   * this.api.httpRequest<Product[]>(ProductEndpoint.LIST, APIMethod.GET, { params: { page: 1 } })
+   * this.api.httpRequest<Product>(ProductEndpoint.CREATE, APIMethod.POST, { body: product })
+   * this.api.httpRequest<Blob>(PolicyEndpoint.DOWNLOAD_DOCUMENT, APIMethod.GET, { responseType: APIResponseType.BLOB })
+   */
+  httpRequest<T>(
+    endpoint: string,
+    method: APIMethod = APIMethod.GET,
+    options?: ApiRequestOptions
+  ): Observable<T> {
+    const url = this.resolveUrl(endpoint);
+    const params = this.buildParams(options?.params);
+    const headers = this.buildHeaders(options?.headers);
+    const responseType = options?.responseType ?? APIResponseType.JSON;
+
+    switch (responseType) {
+      case APIResponseType.BLOB:
+        return this.http.request(method, url, {
+          body: options?.body,
+          headers,
+          params,
+          withCredentials: options?.withCredentials,
+          responseType: 'blob'
+        }) as unknown as Observable<T>;
+
+      case APIResponseType.TEXT:
+        return this.http.request(method, url, {
+          body: options?.body,
+          headers,
+          params,
+          withCredentials: options?.withCredentials,
+          responseType: 'text'
+        }) as unknown as Observable<T>;
+
+      case APIResponseType.ARRAY_BUFFER:
+        return this.http.request(method, url, {
+          body: options?.body,
+          headers,
+          params,
+          withCredentials: options?.withCredentials,
+          responseType: 'arraybuffer'
+        }) as unknown as Observable<T>;
+
+      case APIResponseType.JSON:
+      default:
+        return this.http.request<T>(method, url, {
+          body: options?.body,
+          headers,
+          params,
+          withCredentials: options?.withCredentials,
+          responseType: 'json'
+        });
+    }
   }
 
-  getPaged<T>(url: string, query?: QueryParams): Observable<PagedResponse<T>> {
-    const httpParams = this.buildHttpParams(query);
-    return this.http.get<PagedResponse<T>>(url, { params: httpParams });
+  private resolveUrl(endpoint: string): string {
+    if (!endpoint) return this.baseUrl;
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
+
+    const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    return `${base}/${cleanEndpoint}`;
   }
 
-  post<T>(url: string, body: unknown, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = this.buildHttpParams(params);
-    return this.http.post<T>(url, body, { params: httpParams });
-  }
-
-  put<T>(url: string, body: unknown, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = this.buildHttpParams(params);
-    return this.http.put<T>(url, body, { params: httpParams });
-  }
-
-  patch<T>(url: string, body: unknown, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = this.buildHttpParams(params);
-    return this.http.patch<T>(url, body, { params: httpParams });
-  }
-
-  delete<T>(url: string, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = this.buildHttpParams(params);
-    return this.http.delete<T>(url, { params: httpParams });
-  }
-
-  private buildHttpParams(params?: Record<string, unknown>): HttpParams {
+  private buildParams(params?: Record<string, string | number | boolean | null | undefined>): HttpParams {
     let httpParams = new HttpParams();
     if (!params) return httpParams;
 
-    Object.entries(params).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== '') {
-        if (typeof value === 'object') {
-          httpParams = httpParams.set(key, JSON.stringify(value));
-        } else {
-          httpParams = httpParams.set(key, String(value));
-        }
+        httpParams = httpParams.set(key, String(value));
       }
-    });
-
+    }
     return httpParams;
+  }
+
+  private buildHeaders(headers?: Record<string, string>): HttpHeaders {
+    let httpHeaders = new HttpHeaders();
+    if (!headers) return httpHeaders;
+
+    for (const [key, value] of Object.entries(headers)) {
+      if (value !== undefined && value !== null) {
+        httpHeaders = httpHeaders.set(key, value);
+      }
+    }
+    return httpHeaders;
   }
 }

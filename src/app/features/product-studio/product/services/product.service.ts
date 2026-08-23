@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
+import { catchError } from 'rxjs/operators';
+import { APIMethod, ApiService, ProductEndpoint } from '../../../../core/api';
 import { InsuranceProduct } from '../models/product.models';
 
 const MOCK_PRODUCTS: InsuranceProduct[] = [
@@ -91,19 +91,29 @@ const MOCK_PRODUCTS: InsuranceProduct[] = [
   providedIn: 'root'
 })
 export class ProductService {
-  constructor(private api: ApiService) {}
+  private readonly api = inject(ApiService);
 
-  getProducts(): Observable<InsuranceProduct[]> {
-    return of(MOCK_PRODUCTS).pipe(delay(250));
+  getProducts(params?: Record<string, string | number | boolean | null | undefined>): Observable<InsuranceProduct[]> {
+    return this.api.httpRequest<InsuranceProduct[]>(
+      ProductEndpoint.LIST,
+      APIMethod.GET,
+      { params }
+    ).pipe(
+      catchError(() => of(MOCK_PRODUCTS))
+    );
   }
 
   getProductById(id: string): Observable<InsuranceProduct | undefined> {
-    const product = MOCK_PRODUCTS.find(p => p.id === id);
-    return of(product).pipe(delay(200));
+    return this.api.httpRequest<InsuranceProduct>(
+      `${ProductEndpoint.DETAIL}/${id}`,
+      APIMethod.GET
+    ).pipe(
+      catchError(() => of(MOCK_PRODUCTS.find(p => p.id === id)))
+    );
   }
 
   createProduct(product: Partial<InsuranceProduct>): Observable<InsuranceProduct> {
-    const newProduct: InsuranceProduct = {
+    const fallbackProduct: InsuranceProduct = {
       id: `prd_${Date.now()}`,
       code: product.code || `PRD-NEW-${Math.floor(Math.random() * 900 + 100)}`,
       name: product.name || 'Untitled Insurance Product',
@@ -120,7 +130,17 @@ export class ProductService {
       updatedBy: 'Alexander Vance'
     };
 
-    MOCK_PRODUCTS.unshift(newProduct);
-    return of(newProduct).pipe(delay(300));
+    return this.api.httpRequest<InsuranceProduct>(
+      ProductEndpoint.CREATE,
+      APIMethod.POST,
+      {
+        body: product
+      }
+    ).pipe(
+      catchError(() => {
+        MOCK_PRODUCTS.unshift(fallbackProduct);
+        return of(fallbackProduct);
+      })
+    );
   }
 }

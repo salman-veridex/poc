@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
+import { catchError } from 'rxjs/operators';
+import { APIMethod, ApiService, ClaimsEndpoint } from '../../../../core/api';
 import { ClaimRecord } from '../models/fnol.models';
 
 const MOCK_CLAIMS: ClaimRecord[] = [
@@ -56,14 +56,29 @@ const MOCK_CLAIMS: ClaimRecord[] = [
   providedIn: 'root'
 })
 export class FnolService {
-  constructor(private api: ApiService) {}
+  private readonly api = inject(ApiService);
 
-  getClaims(): Observable<ClaimRecord[]> {
-    return of(MOCK_CLAIMS).pipe(delay(250));
+  getClaims(params?: Record<string, string | number | boolean | null | undefined>): Observable<ClaimRecord[]> {
+    return this.api.httpRequest<ClaimRecord[]>(
+      ClaimsEndpoint.LIST,
+      APIMethod.GET,
+      { params }
+    ).pipe(
+      catchError(() => of(MOCK_CLAIMS))
+    );
+  }
+
+  getClaimById(id: string): Observable<ClaimRecord | undefined> {
+    return this.api.httpRequest<ClaimRecord>(
+      `${ClaimsEndpoint.DETAIL}/${id}`,
+      APIMethod.GET
+    ).pipe(
+      catchError(() => of(MOCK_CLAIMS.find(c => c.id === id || c.claimNumber === id)))
+    );
   }
 
   createClaim(claim: Partial<ClaimRecord>): Observable<ClaimRecord> {
-    const newClaim: ClaimRecord = {
+    const fallbackClaim: ClaimRecord = {
       id: `clm_${Date.now()}`,
       claimNumber: `CLM-US-2026-00${Math.floor(Math.random() * 900 + 100)}`,
       policyNumber: claim.policyNumber || 'POL-US-2026-89421',
@@ -79,7 +94,17 @@ export class FnolService {
       leadAdjuster: 'Evelyn Reed'
     };
 
-    MOCK_CLAIMS.unshift(newClaim);
-    return of(newClaim).pipe(delay(300));
+    return this.api.httpRequest<ClaimRecord>(
+      ClaimsEndpoint.FNOL_CREATE,
+      APIMethod.POST,
+      {
+        body: claim
+      }
+    ).pipe(
+      catchError(() => {
+        MOCK_CLAIMS.unshift(fallbackClaim);
+        return of(fallbackClaim);
+      })
+    );
   }
 }

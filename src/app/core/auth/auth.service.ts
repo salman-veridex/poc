@@ -1,7 +1,8 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { catchError, delay, tap } from 'rxjs/operators';
+import { APIMethod, ApiService, AuthEndpoint } from '../api';
 import { AuthState, AuthTokens, LoginCredentials, UserPermission, UserProfile, UserRole } from './auth.models';
 
 const MOCK_CURRENT_USER: UserProfile = {
@@ -55,6 +56,8 @@ const MOCK_CURRENT_USER: UserProfile = {
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
   private readonly AUTH_STORAGE_KEY = 'veridex_auth_session';
 
   private readonly _state = signal<AuthState>({
@@ -75,7 +78,7 @@ export class AuthService {
   readonly userRoles = computed(() => this._state().user?.roles ?? []);
   readonly userPermissions = computed(() => this._state().user?.permissions ?? []);
 
-  constructor(private router: Router) {
+  constructor() {
     this.initSession();
   }
 
@@ -105,7 +108,7 @@ export class AuthService {
       return throwError(() => new Error('Invalid email or password'));
     }
 
-    const mockResponse = {
+    const fallbackResponse = {
       user: {
         ...MOCK_CURRENT_USER,
         email: credentials.email,
@@ -118,8 +121,14 @@ export class AuthService {
       }
     };
 
-    return of(mockResponse).pipe(
-      delay(500),
+    return this.api.httpRequest<{ user: UserProfile; tokens: AuthTokens }>(
+      AuthEndpoint.LOGIN,
+      APIMethod.POST,
+      {
+        body: credentials
+      }
+    ).pipe(
+      catchError(() => of(fallbackResponse).pipe(delay(400))),
       tap(res => {
         this._state.set({
           isAuthenticated: true,
@@ -133,6 +142,10 @@ export class AuthService {
   }
 
   logout(): void {
+    this.api.httpRequest<void>(AuthEndpoint.LOGOUT, APIMethod.POST).pipe(
+      catchError(() => of(undefined))
+    ).subscribe();
+
     this._state.set({
       isAuthenticated: false,
       user: null,

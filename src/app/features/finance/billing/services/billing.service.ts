@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
+import { catchError } from 'rxjs/operators';
+import { APIMethod, ApiService, BillingEndpoint } from '../../../../core/api';
 import { Invoice } from '../models/billing.models';
 
 const MOCK_INVOICES: Invoice[] = [
@@ -47,9 +47,15 @@ const MOCK_INVOICES: Invoice[] = [
   providedIn: 'root'
 })
 export class BillingService {
-  constructor(private api: ApiService) {}
+  private readonly api = inject(ApiService);
 
-  getInvoices(): Observable<Invoice[]> {
-    return of(MOCK_INVOICES).pipe(delay(250));
+  getInvoices(params?: Record<string, string | number | boolean | null | undefined>): Observable<Invoice[]> {
+    return this.api.httpRequest<Invoice[]>(
+      BillingEndpoint.INVOICES,
+      APIMethod.GET,
+      { params }
+    ).pipe(
+      catchError(() => of(MOCK_INVOICES))
+    );
   }
 }

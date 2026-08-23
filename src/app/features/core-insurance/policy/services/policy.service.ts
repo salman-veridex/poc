@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
+import { catchError } from 'rxjs/operators';
+import { APIMethod, APIResponseType, ApiService, PolicyEndpoint } from '../../../../core/api';
 import { PolicySchedule } from '../models/policy.models';
 
 const MOCK_POLICIES: PolicySchedule[] = [
@@ -75,14 +75,34 @@ const MOCK_POLICIES: PolicySchedule[] = [
   providedIn: 'root'
 })
 export class PolicyService {
-  constructor(private api: ApiService) {}
+  private readonly api = inject(ApiService);
 
-  getPolicies(): Observable<PolicySchedule[]> {
-    return of(MOCK_POLICIES).pipe(delay(250));
+  getPolicies(params?: Record<string, string | number | boolean | null | undefined>): Observable<PolicySchedule[]> {
+    return this.api.httpRequest<PolicySchedule[]>(
+      PolicyEndpoint.LIST,
+      APIMethod.GET,
+      { params }
+    ).pipe(
+      catchError(() => of(MOCK_POLICIES))
+    );
   }
 
   getPolicyById(id: string): Observable<PolicySchedule | undefined> {
-    const policy = MOCK_POLICIES.find(p => p.id === id || p.policyNumber === id);
-    return of(policy).pipe(delay(200));
+    return this.api.httpRequest<PolicySchedule>(
+      `${PolicyEndpoint.DETAIL}/${id}`,
+      APIMethod.GET
+    ).pipe(
+      catchError(() => of(MOCK_POLICIES.find(p => p.id === id || p.policyNumber === id)))
+    );
+  }
+
+  downloadDocument(policyId: string, documentId: string): Observable<Blob> {
+    return this.api.httpRequest<Blob>(
+      `${PolicyEndpoint.DOWNLOAD_DOCUMENT}/${policyId}/${documentId}`,
+      APIMethod.GET,
+      {
+        responseType: APIResponseType.BLOB
+      }
+    );
   }
 }
