@@ -1,0 +1,233 @@
+<div class="vx-wizard-container">
+  <!-- Header -->
+  <div class="vx-page-header">
+    <div class="vx-page-title-group">
+      <h1>New Insurance Product Definition Wizard</h1>
+      <p>Configure product metadata, coverage limits, underwriting question matrix, and rating factors</p>
+    </div>
+    <div class="vx-page-actions">
+      <a routerLink="/product-studio/products" class="btn btn-secondary btn-sm">Cancel</a>
+      @if (currentStep() === 4) {
+        <button type="button" class="btn btn-primary btn-sm" (click)="saveProduct()" [disabled]="saving()">
+          {{ saving() ? 'Publishing Version 1.0.0...' : 'Publish Product to Catalog' }}
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary btn-sm" (click)="nextStep()">
+          Continue &rarr;
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Wizard Step Indicator -->
+  <div class="vx-step-indicator-bar">
+    <div class="vx-step-item" [class.is-active]="currentStep() === 1" [class.is-done]="currentStep() > 1" (click)="setStep(1)">
+      <span class="step-num">1</span>
+      <span class="step-label">Basic Metadata & LOB</span>
+    </div>
+    <div class="vx-step-separator"></div>
+    <div class="vx-step-item" [class.is-active]="currentStep() === 2" [class.is-done]="currentStep() > 2" (click)="setStep(2)">
+      <span class="step-num">2</span>
+      <span class="step-label">Coverages & Deductibles</span>
+    </div>
+    <div class="vx-step-separator"></div>
+    <div class="vx-step-item" [class.is-active]="currentStep() === 3" [class.is-done]="currentStep() > 3" (click)="setStep(3)">
+      <span class="step-num">3</span>
+      <span class="step-label">Dynamic Question Matrix</span>
+    </div>
+    <div class="vx-step-separator"></div>
+    <div class="vx-step-item" [class.is-active]="currentStep() === 4" [class.is-done]="currentStep() > 4" (click)="setStep(4)">
+      <span class="step-num">4</span>
+      <span class="step-label">Rating Engine & Factors</span>
+    </div>
+  </div>
+
+  <!-- Wizard Body Card -->
+  <div class="vx-card">
+    <form [formGroup]="productForm">
+      <!-- Step 1: Basic Info -->
+      @if (currentStep() === 1) {
+        <div class="vx-card-body">
+          <h3 class="section-title">Step 1: Product Definition & Market Scope</h3>
+          <div class="grid-cols-2">
+            <div class="vx-form-group">
+              <label>Product Code *</label>
+              <input type="text" formControlName="code" class="form-control" placeholder="e.g. PRD-CYB-001" />
+            </div>
+            <div class="vx-form-group">
+              <label>Product Name *</label>
+              <input type="text" formControlName="name" class="form-control" placeholder="e.g. Comprehensive Commercial Property" />
+            </div>
+          </div>
+
+          <div class="grid-cols-3 mt-4">
+            <div class="vx-form-group">
+              <label>Line of Business *</label>
+              <select formControlName="lineOfBusiness" class="form-control">
+                <option value="COMMERCIAL_PROPERTY">Commercial Property</option>
+                <option value="GENERAL_LIABILITY">General Liability</option>
+                <option value="CYBER_RISK">Cyber Risk</option>
+                <option value="DIRECTORS_AND_OFFICERS">Directors & Officers (D&O)</option>
+                <option value="COMMERCIAL_AUTO">Commercial Auto</option>
+                <option value="INLAND_MARINE">Inland Marine</option>
+              </select>
+            </div>
+            <div class="vx-form-group">
+              <label>Effective Inception Date *</label>
+              <input type="date" formControlName="effectiveDate" class="form-control" />
+            </div>
+            <div class="vx-form-group">
+              <label>Regulatory Jurisdictions *</label>
+              <input type="text" formControlName="jurisdictions" class="form-control" placeholder="e.g. US-ALL, UK, SG" />
+            </div>
+          </div>
+
+          <div class="vx-form-group mt-4">
+            <label>Product Summary & Underwriting Intent</label>
+            <textarea formControlName="description" rows="3" class="form-control" placeholder="Describe the target market, underwriting appetite, and coverage highlights..."></textarea>
+          </div>
+        </div>
+      }
+
+      <!-- Step 2: Coverages -->
+      @if (currentStep() === 2) {
+        <div class="vx-card-body">
+          <div class="vx-card-header-inline">
+            <h3 class="section-title">Step 2: Insuring Agreements, Coverage Limits & Deductibles</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="addCoverage()">
+              + Add Coverage Item
+            </button>
+          </div>
+
+          <div formArrayName="coverages" class="vx-form-array-list">
+            @for (cov of coveragesArray.controls; track $index; let idx = $index) {
+              <div [formGroupName]="idx" class="vx-array-card">
+                <div class="array-card-header">
+                  <span class="array-badge">Coverage #{{ idx + 1 }}</span>
+                  <button type="button" class="btn-remove" (click)="removeCoverage(idx)">Remove</button>
+                </div>
+                <div class="grid-cols-2">
+                  <div class="vx-form-group">
+                    <label>Coverage Name *</label>
+                    <input type="text" formControlName="name" class="form-control" />
+                  </div>
+                  <div class="vx-form-group">
+                    <label>Default Limit ($) *</label>
+                    <input type="number" formControlName="defaultLimit" class="form-control" />
+                  </div>
+                </div>
+                <div class="grid-cols-3 mt-2">
+                  <div class="vx-form-group">
+                    <label>Min Limit ($)</label>
+                    <input type="number" formControlName="minLimit" class="form-control" />
+                  </div>
+                  <div class="vx-form-group">
+                    <label>Max Limit ($)</label>
+                    <input type="number" formControlName="maxLimit" class="form-control" />
+                  </div>
+                  <div class="vx-form-group">
+                    <label>Default Deductible ($)</label>
+                    <input type="number" formControlName="defaultDeductible" class="form-control" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Step 3: Questions Matrix -->
+      @if (currentStep() === 3) {
+        <div class="vx-card-body">
+          <div class="vx-card-header-inline">
+            <h3 class="section-title">Step 3: Dynamic Underwriting Questionnaire Matrix</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="addQuestion()">
+              + Add Question Rule
+            </button>
+          </div>
+
+          <div formArrayName="questions" class="vx-form-array-list">
+            @for (q of questionsArray.controls; track $index; let idx = $index) {
+              <div [formGroupName]="idx" class="vx-array-card">
+                <div class="array-card-header">
+                  <span class="array-badge">Question #{{ idx + 1 }}</span>
+                  <button type="button" class="btn-remove" (click)="removeQuestion(idx)">Remove</button>
+                </div>
+                <div class="grid-cols-3">
+                  <div class="vx-form-group">
+                    <label>Field Identifier Key *</label>
+                    <input type="text" formControlName="questionCode" class="form-control" />
+                  </div>
+                  <div class="vx-form-group">
+                    <label>Field / Input Type *</label>
+                    <select formControlName="type" class="form-control">
+                      <option value="TEXT">Short Text</option>
+                      <option value="NUMBER">Numeric Value</option>
+                      <option value="BOOLEAN">Yes / No Switch</option>
+                      <option value="SELECT">Lookup Dropdown</option>
+                      <option value="CURRENCY">Monetary Value ($)</option>
+                    </select>
+                  </div>
+                  <div class="vx-form-group">
+                    <label>Default Value</label>
+                    <input type="text" formControlName="defaultValue" class="form-control" />
+                  </div>
+                </div>
+                <div class="vx-form-group mt-2">
+                  <label>Question Prompt Displayed to Broker / Underwriter *</label>
+                  <input type="text" formControlName="prompt" class="form-control" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Step 4: Rating Algorithm -->
+      @if (currentStep() === 4) {
+        <div class="vx-card-body">
+          <h3 class="section-title">Step 4: Actuarial Rating Algorithm & Pricing Factors</h3>
+          <div class="grid-cols-3">
+            <div class="vx-form-group">
+              <label>Base Rate (Per $1,000 Total Insured Value) *</label>
+              <input type="number" formControlName="baseRatePerThousand" step="0.01" class="form-control" />
+            </div>
+            <div class="vx-form-group">
+              <label>Underwriting Expense Load Multiplier *</label>
+              <input type="number" formControlName="expenseLoadFactor" step="0.01" class="form-control" />
+            </div>
+            <div class="vx-form-group">
+              <label>Broker Commission Rate (%) *</label>
+              <input type="number" formControlName="commissionRate" step="0.5" class="form-control" />
+            </div>
+          </div>
+
+          <div class="vx-rating-formula-box mt-4">
+            <div class="formula-header">Live Rating Formula Preview:</div>
+            <code>
+              Annual Premium = (Total Insured Limit / 1000) &times; BaseRate &times; ConstructionFactor &times; LossModifier &times; ExpenseLoad
+            </code>
+          </div>
+        </div>
+      }
+
+      <!-- Footer Buttons -->
+      <div class="vx-card-footer">
+        @if (currentStep() > 1) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="prevStep()">
+            &larr; Previous Step
+          </button>
+        }
+        @if (currentStep() < 4) {
+          <button type="button" class="btn btn-primary btn-sm" (click)="nextStep()">
+            Next Step &rarr;
+          </button>
+        } @else {
+          <button type="button" class="btn btn-primary btn-sm" (click)="saveProduct()" [disabled]="saving()">
+            {{ saving() ? 'Publishing...' : 'Save & Activate Product' }}
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</div>

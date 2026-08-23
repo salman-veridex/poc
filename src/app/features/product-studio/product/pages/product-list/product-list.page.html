@@ -1,0 +1,82 @@
+<div class="vx-page-container">
+  <!-- Page Header -->
+  <div class="vx-page-header">
+    <div class="vx-page-title-group">
+      <h1>Insurance Product Catalog & Line of Business Studio</h1>
+      <p>Configure rating algorithms, coverages, question matrices, underwriting guidelines, and policy forms</p>
+    </div>
+    <div class="vx-page-actions">
+      <button *hasPermission="'PRODUCT_CREATE'" routerLink="/product-studio/products/create" class="btn btn-primary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Create New Product</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- AG Grid Enterprise Table -->
+  <app-data-grid
+    title="Product Portfolio"
+    subtitle="Double-click any product row to enter the full Product Studio editor"
+    [columnDefs]="columnDefs"
+    [rowData]="products()"
+    [loading]="loading()"
+    [error]="error()"
+    [showExport]="true"
+    gridHeight="600px"
+    (rowDoubleClicked)="onRowDoubleClicked($event)"
+    (refreshClicked)="loadProducts()"
+  />
+</div>
+
+
+
+<button type="button" (click)="openDrawer()">
+  Add Product
+</button>
+
+
+<!-- <app-drawer
+  [isOpen]="isDrawerOpen"
+  title="Create Product"
+  subtitle="Create a new insurance product"
+  size="lg"
+  [showFooter]="true"
+  (closed)="closeDrawer()"
+>
+  
+
+  <div>
+    <h4>Product Information</h4>
+
+    <div>
+      <label>Product Name</label>
+      <input type="text" />
+    </div>
+
+    <div>
+      <label>Product Code</label>
+      <input type="text" />
+    </div>
+  </div>
+
+
+
+  <div drawerFooter>
+
+    <button
+      type="button"
+      (click)="closeDrawer()"
+    >
+      Cancel
+    </button>
+
+    <button type="button">
+      Save Product
+    </button>
+
+  </div>
+
+</app-drawer> -->

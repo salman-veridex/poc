@@ -1,0 +1,217 @@
+.vx-wizard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vx-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .vx-page-title-group {
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--vx-brand-navy);
+    }
+    p {
+      font-size: 12px;
+      color: var(--vx-text-muted);
+      margin-top: 2px;
+    }
+  }
+
+  .vx-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.vx-step-indicator-bar {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid var(--vx-border-subtle);
+  border-radius: var(--vx-radius-lg);
+  padding: 12px 18px;
+  box-shadow: var(--vx-shadow-sm);
+  gap: 8px;
+
+  .vx-step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.15s ease;
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--vx-bg-app);
+      border: 1px solid var(--vx-border-medium);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--vx-text-secondary);
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--vx-text-primary);
+      white-space: nowrap;
+    }
+
+    &.is-active {
+      opacity: 1;
+      .step-num {
+        background-color: var(--vx-brand-primary);
+        border-color: var(--vx-brand-primary);
+        color: #ffffff;
+      }
+      .step-label {
+        color: var(--vx-brand-primary);
+        font-weight: 700;
+      }
+    }
+
+    &.is-done {
+      opacity: 0.9;
+      .step-num {
+        background-color: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+      }
+    }
+  }
+
+  .vx-step-separator {
+    flex: 1;
+    height: 1px;
+    background-color: var(--vx-border-subtle);
+    margin: 0 4px;
+  }
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--vx-brand-navy);
+  margin-bottom: 16px;
+}
+
+.vx-card-header-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.vx-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--vx-text-primary);
+  }
+}
+
+.form-control {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--vx-border-medium);
+  border-radius: var(--vx-radius-md);
+  background-color: #ffffff;
+  color: var(--vx-text-primary);
+  transition: all 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--vx-brand-primary);
+    box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.15);
+  }
+}
+
+textarea.form-control {
+  height: auto;
+  padding: 8px 10px;
+}
+
+.vx-form-array-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vx-array-card {
+  background-color: var(--vx-bg-subtle);
+  border: 1px solid var(--vx-border-subtle);
+  border-radius: var(--vx-radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .array-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .array-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--vx-brand-primary);
+      background-color: var(--vx-brand-primary-light);
+      padding: 1px 7px;
+      border-radius: var(--vx-radius-sm);
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: none;
+      font-size: 11.5px;
+      color: var(--vx-danger);
+      font-weight: 600;
+      cursor: pointer;
+      &:hover { text-decoration: underline; }
+    }
+  }
+}
+
+.vx-rating-formula-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--vx-radius-md);
+  padding: 14px 18px;
+
+  .formula-header {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  code {
+    font-family: var(--vx-font-mono);
+    font-size: 13px;
+    color: var(--vx-brand-navy);
+    font-weight: 600;
+  }
+}
+
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }

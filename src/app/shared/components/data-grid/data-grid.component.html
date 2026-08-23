@@ -1,0 +1,161 @@
+<div class="vx-grid-wrapper" [class.is-dense]="isDense()">
+  <!-- Enterprise Grid Toolbar -->
+  <div class="vx-grid-toolbar">
+    <div class="vx-toolbar-left">
+      @if (title) {
+        <div class="vx-toolbar-heading">
+          <div class="vx-toolbar-title-row">
+            <h3 class="vx-toolbar-title">{{ title }}</h3>
+            @if (rowData) {
+              <span class="vx-row-counter-badge">{{ totalCount !== undefined ? totalCount : rowData.length }} records</span>
+            }
+          </div>
+          @if (subtitle) {
+            <p class="vx-toolbar-subtitle">{{ subtitle }}</p>
+          }
+        </div>
+      }
+
+      @if (selectedCount() > 0) {
+        <div class="vx-selection-banner">
+          <span class="vx-selection-text">{{ selectedCount() }} selected</span>
+          <ng-content select="[selectionActions]"></ng-content>
+        </div>
+      }
+    </div>
+
+    <div class="vx-toolbar-right">
+      <!-- Quick Filter Search Input -->
+      @if (showQuickFilter) {
+        <div class="vx-quick-search-box">
+          <svg class="vx-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            [value]="searchTerm()"
+            (input)="onQuickFilterChanged($event)"
+            placeholder="Quick search records..."
+          />
+          @if (searchTerm()) {
+            <button class="vx-clear-search-btn" (click)="clearSearch()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Custom Toolbar Action Slots -->
+      <ng-content select="[toolbarActions]"></ng-content>
+
+      <!-- Density Toggle Button -->
+      @if (showDensityToggle) {
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="toggleDensity()"
+          [title]="isDense() ? 'Comfortable View' : 'Compact View'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <span>{{ isDense() ? 'Compact' : 'Density' }}</span>
+        </button>
+      }
+
+      <!-- Export Button -->
+      @if (showExport) {
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="exportCsv()"
+          title="Export CSV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Export</span>
+        </button>
+      }
+
+      <!-- Refresh Button -->
+      @if (showRefresh) {
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm btn-icon"
+          (click)="onRefresh()"
+          [disabled]="loading"
+          title="Refresh Data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.animate-spin]="loading" style="width: 13px; height: 13px;">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Main Grid Surface -->
+  <div class="vx-grid-body-container" [style.height]="gridHeight">
+    <!-- AG Grid Table Instance -->
+    <ag-grid-angular
+      class="ag-theme-quartz vx-ag-grid-instance"
+      [rowData]="rowData"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      [gridOptions]="gridOptions"
+      [pagination]="pagination"
+      [paginationPageSize]="pageSize"
+      (gridReady)="onGridReady($event)"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowClicked)="onRowClicked($event)"
+      (rowDoubleClicked)="onRowDoubleClicked($event)"
+    />
+
+    <!-- Loading Overlay -->
+    @if (loading) {
+      <div class="vx-grid-loading-overlay">
+        <div class="vx-spinner"></div>
+        <span>Retrieving insurance records...</span>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error) {
+      <div class="vx-grid-error-overlay">
+        <div class="vx-error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h4>Failed to Load Grid Data</h4>
+        <p>{{ error }}</p>
+        <button class="btn btn-secondary btn-sm" (click)="onRefresh()">Retry Query</button>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading && !error && (!rowData || rowData.length === 0)) {
+      <div class="vx-grid-empty-overlay">
+        <div class="vx-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <h4>{{ emptyTitle }}</h4>
+        <p>{{ emptyMessage }}</p>
+      </div>
+    }
+  </div>
+</div>

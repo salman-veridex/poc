@@ -1,0 +1,41 @@
+.vx-shell-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--vx-bg-app);
+}
+
+.vx-body-container {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - var(--vx-header-height));
+  overflow: hidden;
+}
+
+.vx-main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--vx-bg-app);
+}
+
+.vx-content-wrapper {
+  padding: 12px 20px 32px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.vx-router-outlet-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}

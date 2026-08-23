@@ -1,0 +1,32 @@
+.vx-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vx-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .vx-page-title-group {
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--vx-brand-navy);
+    }
+    p {
+      font-size: 12px;
+      color: var(--vx-text-muted);
+      margin-top: 2px;
+    }
+  }
+
+  .vx-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

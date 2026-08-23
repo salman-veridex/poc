@@ -1,0 +1,160 @@
+<div class="vx-dashboard-container">
+  <!-- Page Header -->
+  <div class="vx-page-header">
+    <div class="vx-page-title-group">
+      <h1>Executive Insurance Operations & Underwriting Overview</h1>
+      <p>Real-time enterprise metrics across Policy Administration, Rating, Claims, and Finance</p>
+    </div>
+    <div class="vx-page-actions">
+      <a routerLink="/quote-underwriting/submissions" class="btn btn-primary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Intake
+      </a>
+      <a routerLink="/product-studio/products" class="btn btn-secondary btn-sm">
+        Product Studio
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metric Cards Grid -->
+  <div class="vx-metrics-grid">
+    @for (metric of metrics(); track metric.id) {
+      <div class="vx-metric-card">
+        <div class="vx-metric-header">
+          <span class="vx-metric-title">{{ metric.title }}</span>
+          <div class="vx-metric-icon">
+            @switch (metric.icon) {
+              @case ('dollar') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              }
+              @case ('shield') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              }
+              @case ('pie') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              }
+              @case ('alert') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              }
+            }
+          </div>
+        </div>
+        <div class="vx-metric-value">{{ metric.value }}</div>
+        <div class="vx-metric-footer">
+          <span class="vx-metric-badge" [class.is-pos]="metric.isPositive" [class.is-neg]="!metric.isPositive">
+            {{ metric.change }}
+          </span>
+          <span class="vx-metric-period">{{ metric.period }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Operational Grid (2 Columns: Pipeline & Task Inbox) -->
+  <div class="vx-dashboard-split-grid">
+    <!-- Underwriting Pipeline Progress -->
+    <div class="vx-card">
+      <div class="vx-card-header">
+        <div>
+          <h3 class="vx-card-title">Commercial Underwriting & Quote Pipeline</h3>
+          <p class="vx-card-subtitle">Active transactions currently moving through PAS stages</p>
+        </div>
+        <a routerLink="/quote-underwriting/quotes" class="btn btn-ghost btn-sm">View Workbench &rarr;</a>
+      </div>
+      <div class="vx-card-body">
+        <div class="vx-pipeline-list">
+          @for (item of pipeline(); track item.id) {
+            <div class="vx-pipeline-item">
+              <div class="pipeline-label-row">
+                <span class="stage-name">{{ item.stage }} ({{ item.count }})</span>
+                <span class="stage-premium">{{ item.grossWrittenPremium | currencyFormat }} GWP</span>
+              </div>
+              <div class="pipeline-progress-track">
+                <div class="pipeline-progress-fill" [style.width.%]="item.percentage"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Underwriting & Claim Action Items -->
+    <div class="vx-card">
+      <div class="vx-card-header">
+        <div>
+          <h3 class="vx-card-title">Priority Action Queue & Referrals</h3>
+          <p class="vx-card-subtitle">Transactions requiring senior underwriter authority or claim review</p>
+        </div>
+        <a routerLink="/quote-underwriting/referrals" class="btn btn-ghost btn-sm">All Referrals &rarr;</a>
+      </div>
+      <div class="vx-card-body p-0">
+        <div class="vx-tasks-table">
+          @for (task of tasks(); track task.id) {
+            <div class="vx-task-row">
+              <div class="task-info">
+                <div class="task-title-line">
+                  <span class="task-priority-pill" [class]="'priority-' + task.priority.toLowerCase()">{{ task.priority }}</span>
+                  <span class="task-title">{{ task.title }}</span>
+                </div>
+                <div class="task-meta-line">
+                  <span>{{ task.insuredName }}</span>
+                  <span>•</span>
+                  <span>Due: {{ task.dueDate }}</span>
+                </div>
+              </div>
+              <div class="task-right">
+                <span class="task-amount">{{ task.amount | currencyFormat }}</span>
+                <a routerLink="/quote-underwriting/underwriting" class="btn btn-secondary btn-sm">Review</a>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent System Activity / PAS Transactions -->
+  <div class="vx-card mt-4">
+    <div class="vx-card-header">
+      <div>
+        <h3 class="vx-card-title">Recent Policy & Claims Transactions</h3>
+        <p class="vx-card-subtitle">Real-time event stream from Core Insurance, FNOL & Finance engines</p>
+      </div>
+      <a routerLink="/core-insurance/policies" class="btn btn-ghost btn-sm">View All Policies &rarr;</a>
+    </div>
+    <div class="vx-card-body p-0">
+      <div class="vx-tx-list">
+        @for (tx of transactions(); track tx.id) {
+          <div class="vx-tx-item">
+            <div class="tx-left">
+              <div class="tx-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="tx-details">
+                <div class="tx-num-row">
+                  <span class="tx-num">{{ tx.transactionNumber }}</span>
+                  <span class="tx-insured">{{ tx.insuredName }}</span>
+                </div>
+                <div class="tx-sub-row">
+                  <span>{{ tx.productName }}</span>
+                  <span>•</span>
+                  <span>{{ tx.timestamp }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <span class="tx-amt">{{ tx.amount | currencyFormat }}</span>
+              <app-status-badge [status]="tx.status" />
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

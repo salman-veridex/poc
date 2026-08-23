@@ -1,0 +1,16 @@
+<div class="vx-shell-container">
+  <app-header (toggleSidebar)="toggleSidebar()" />
+
+  <div class="vx-body-container">
+    <app-sidebar [isCollapsed]="sidebarCollapsed()" />
+
+    <main class="vx-main-content">
+      <div class="vx-content-wrapper">
+        <app-breadcrumbs />
+        <div class="vx-router-outlet-container">
+          <router-outlet />
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
