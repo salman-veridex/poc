@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, forwardRef, ElementRef, HostListener, inject } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, forwardRef, ElementRef, HostListener, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 
 export interface CalendarDay {
@@ -26,15 +26,35 @@ export interface CalendarDay {
     }
   ]
 })
-export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
+export class AppDatepickerComponent implements OnInit, OnChanges, ControlValueAccessor {
   private elementRef = inject(ElementRef);
 
   // ====================================================================================
   // 🚀 [CLIENT DEMO TOGGLE]: Switch the UI Design Variant without touching consumer code!
   // 'classic'      -> Native Enterprise Input controls
   // 'modern-popup' -> Custom Floating Interactive Calendar & Time Picker UI
-  // ====================================================================================
   @Input() variant: 'classic' | 'modern-popup' = 'modern-popup';
+
+  @Input('modern-popup')
+  set isModernPopup(val: boolean | string) {
+    if (val !== false && val !== 'false') {
+      this.variant = 'modern-popup';
+    }
+  }
+
+  @Input('modernPopup')
+  set isModernPopupCamel(val: boolean | string) {
+    if (val !== false && val !== 'false') {
+      this.variant = 'modern-popup';
+    }
+  }
+
+  @Input('classic')
+  set isClassic(val: boolean | string) {
+    if (val !== false && val !== 'false') {
+      this.variant = 'classic';
+    }
+  }
 
   @Input() id: string = `dp_${Math.random().toString(36).substring(2, 9)}`;
   @Input() label: string = '';
@@ -70,8 +90,17 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
   private onTouched: () => void = () => {};
 
   ngOnInit(): void {
+    this.syncInitialViewDate();
     this.generateYearList();
     this.generateCalendarGrid();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['startYear'] || changes['endYear'] || changes['minDate'] || changes['maxDate']) {
+      this.syncInitialViewDate();
+      this.generateYearList();
+      this.generateCalendarGrid();
+    }
   }
 
   // Close popup when clicking outside the component
@@ -83,13 +112,35 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
   }
 
   /**
+   * Effective starting year combining startYear and minDate
+   */
+  get effectiveStartYear(): number {
+    if (this.minDate) {
+      const minYear = Number(this.formatToDateOnly(this.minDate).split('-')[0]);
+      return Math.max(this.startYear, minYear);
+    }
+    return this.startYear;
+  }
+
+  /**
+   * Effective ending year combining endYear and maxDate
+   */
+  get effectiveEndYear(): number {
+    if (this.maxDate) {
+      const maxYear = Number(this.formatToDateOnly(this.maxDate).split('-')[0]);
+      return Math.min(this.endYear, maxYear);
+    }
+    return this.endYear;
+  }
+
+  /**
    * Computed minimum date string conforming to YYYY-MM-DD
    */
   get minDateString(): string {
     if (this.minDate) {
       return this.formatToDateOnly(this.minDate);
     }
-    return `${this.startYear}-01-01`;
+    return `${this.effectiveStartYear}-01-01`;
   }
 
   /**
@@ -99,7 +150,19 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
     if (this.maxDate) {
       return this.formatToDateOnly(this.maxDate);
     }
-    return `${this.endYear}-12-31`;
+    return `${this.effectiveEndYear}-12-31`;
+  }
+
+  get isPrevMonthDisabled(): boolean {
+    if (!this.minDateString) return false;
+    const [minY, minM] = this.minDateString.split('-').map(Number);
+    return this.viewYear < minY || (this.viewYear === minY && this.viewMonth <= minM - 1);
+  }
+
+  get isNextMonthDisabled(): boolean {
+    if (!this.maxDateString) return false;
+    const [maxY, maxM] = this.maxDateString.split('-').map(Number);
+    return this.viewYear > maxY || (this.viewYear === maxY && this.viewMonth >= maxM - 1);
   }
 
   get formattedDisplayValue(): string {
@@ -128,6 +191,7 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
     if (!value) {
       this.datePart = '';
       this.timePart = '00:00';
+      this.syncInitialViewDate();
       this.generateCalendarGrid();
       return;
     }
@@ -174,7 +238,11 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
 
   onDateInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.datePart = input.value;
+    const val = input.value;
+    if (this.isDateDisabled(val)) {
+      return;
+    }
+    this.datePart = val;
     this.emitValue();
   }
 
@@ -189,13 +257,17 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
   }
 
   // ==========================================
-  // Modern Popup Calendar Logic
+  // Modern Popup Calendar Logic with Strict Validation
   // ==========================================
 
   togglePopup(): void {
     if (this.disabled) return;
     this.isPopupOpen = !this.isPopupOpen;
     if (this.isPopupOpen) {
+      if (!this.datePart) {
+        this.syncInitialViewDate();
+      }
+      this.generateYearList();
       this.generateCalendarGrid();
     } else {
       this.onTouched();
@@ -203,6 +275,7 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
   }
 
   prevMonth(): void {
+    if (this.isPrevMonthDisabled) return;
     if (this.viewMonth === 0) {
       this.viewMonth = 11;
       this.viewYear--;
@@ -213,6 +286,7 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
   }
 
   nextMonth(): void {
+    if (this.isNextMonthDisabled) return;
     if (this.viewMonth === 11) {
       this.viewMonth = 0;
       this.viewYear++;
@@ -254,10 +328,11 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
     this.datePart = '';
     this.timePart = '00:00';
     this.emitValue();
+    this.syncInitialViewDate();
     this.generateCalendarGrid();
   }
 
-  // Quick Preset Handlers
+  // Quick Preset Handlers with Validation Checking
   selectPreset(preset: 'today' | 'tomorrow' | 'plus30' | 'endOfYear'): void {
     const now = new Date();
     let target = new Date();
@@ -280,17 +355,71 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
     const y = target.getFullYear();
     const m = String(target.getMonth() + 1).padStart(2, '0');
     const d = String(target.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
+
+    if (this.isDateDisabled(dateStr)) {
+      return;
+    }
 
     this.viewYear = y;
     this.viewMonth = target.getMonth();
-    this.datePart = `${y}-${m}-${d}`;
+    this.datePart = dateStr;
     this.emitValue();
     this.generateCalendarGrid();
   }
 
+  isPresetDisabled(preset: 'today' | 'tomorrow' | 'plus30' | 'endOfYear'): boolean {
+    const now = new Date();
+    let target = new Date();
+
+    switch (preset) {
+      case 'today':
+        target = now;
+        break;
+      case 'tomorrow':
+        target.setDate(now.getDate() + 1);
+        break;
+      case 'plus30':
+        target.setDate(now.getDate() + 30);
+        break;
+      case 'endOfYear':
+        target = new Date(this.viewYear, 11, 31);
+        break;
+    }
+
+    const y = target.getFullYear();
+    const m = String(target.getMonth() + 1).padStart(2, '0');
+    const d = String(target.getDate()).padStart(2, '0');
+    return this.isDateDisabled(`${y}-${m}-${d}`);
+  }
+
+  private syncInitialViewDate(): void {
+    if (this.datePart) {
+      const [y, m] = this.datePart.split('-').map(Number);
+      this.viewYear = y;
+      this.viewMonth = m - 1;
+      return;
+    }
+
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+
+    if (todayYear < this.effectiveStartYear) {
+      this.viewYear = this.effectiveStartYear;
+      this.viewMonth = 0;
+    } else if (todayYear > this.effectiveEndYear) {
+      this.viewYear = this.effectiveEndYear;
+      this.viewMonth = 11;
+    } else {
+      this.viewYear = todayYear;
+      this.viewMonth = todayMonth;
+    }
+  }
+
   private generateYearList(): void {
-    const start = Math.min(this.startYear, 2000);
-    const end = Math.max(this.endYear, new Date().getFullYear() + 10);
+    const start = this.effectiveStartYear;
+    const end = this.effectiveEndYear;
     this.yearList = [];
     for (let y = start; y <= end; y++) {
       this.yearList.push(y);
@@ -359,7 +488,8 @@ export class AppDatepickerComponent implements OnInit, ControlValueAccessor {
     this.calendarDays = days;
   }
 
-  private isDateDisabled(dateStr: string): boolean {
+  isDateDisabled(dateStr: string): boolean {
+    if (!dateStr) return true;
     if (this.minDateString && dateStr < this.minDateString) {
       return true;
     }
