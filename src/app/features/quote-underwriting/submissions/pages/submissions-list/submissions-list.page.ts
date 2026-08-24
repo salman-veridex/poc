@@ -1,18 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
-import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';
-import { Submission } from '../../models/submission.models';
+import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
+import { Submission, SubmissionStatus } from '../../models/submission.models';
 import { SubmissionService } from '../../services/submission.service';
+import { ModalComponent } from '@shared/components/modal/modal.component';
+import { SelectComponent } from '@shared/form-controls/select/select.component';
 
 @Component({
   selector: 'app-submissions-list-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DataGridComponent, HasPermissionDirective, AppDatepickerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DataGridComponent,
+    AppDatepickerComponent,
+    DrawerComponent,
+    // SelectComponent
+  ],
   templateUrl: './submissions-list.page.html',
   styleUrl: './submissions-list.page.scss'
 })
@@ -25,9 +34,22 @@ export class SubmissionsListPage implements OnInit {
   allSubmissions: Submission[] = [];
   loading = signal(true);
 
-  // Reactive Form with historical date filtering
+  // Reactive Form for historical date filtering
   filterForm = this.fb.group({
     filterDate: ['']
+  });
+
+  // Reusable Drawer State & Intake Form
+  isIntakeDrawerOpen = false;
+  intakeForm = this.fb.group({
+    insuredName: ['', [Validators.required]],
+    brokerName: ['Marcus Vance', [Validators.required]],
+    brokerageAgency: ['Aon Risk Solutions', [Validators.required]],
+    lineOfBusiness: ['Commercial Property', [Validators.required]],
+    totalInsuredValue: [5000000, [Validators.required]],
+    estimatedRevenue: [75000, [Validators.required]],
+    assignedUnderwriter: ['Sarah Jenkins (Senior UW)', [Validators.required]],
+    intakeDate: ['2026-08-24T10:30:00.000Z', [Validators.required]]
   });
 
   columnDefs: ColDef<Submission>[] = [
@@ -103,6 +125,52 @@ export class SubmissionsListPage implements OnInit {
     });
   }
 
+  // Drawer Controls
+  openIntakeDrawer(): void {
+    this.isIntakeDrawerOpen = true;
+  }
+
+  closeIntakeDrawer(): void {
+    this.isIntakeDrawerOpen = false;
+  }
+
+  submitIntake(): void {
+    if (this.intakeForm.invalid) {
+      this.intakeForm.markAllAsTouched();
+      return;
+    }
+
+    const val = this.intakeForm.value;
+    const newSubmission: Submission = {
+      id: `sub_${Date.now()}`,
+      submissionNumber: `SUB-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      insuredName: val.insuredName || 'Untitled Commercial Insured',
+      brokerName: val.brokerName || 'Direct Broker',
+      brokerageAgency: val.brokerageAgency || 'Direct Intake Portal',
+      lineOfBusiness: val.lineOfBusiness || 'Commercial Property',
+      requestedEffectiveDate: val.intakeDate || new Date().toISOString().substring(0, 10),
+      totalInsuredValue: Number(val.totalInsuredValue) || 5000000,
+      estimatedRevenue: Number(val.estimatedRevenue) || 75000,
+      triageScore: Math.floor(75 + Math.random() * 20),
+      status: 'INTAKE' as SubmissionStatus,
+      assignedUnderwriter: val.assignedUnderwriter || 'Unassigned Triage Queue',
+      createdAt: new Date().toISOString()
+    };
+
+    this.allSubmissions = [newSubmission, ...this.allSubmissions];
+    this.submissions.set(this.allSubmissions);
+    this.closeIntakeDrawer();
+    this.intakeForm.reset({
+      brokerName: 'Marcus Vance',
+      brokerageAgency: 'Aon Risk Solutions',
+      lineOfBusiness: 'Commercial Property',
+      totalInsuredValue: 5000000,
+      estimatedRevenue: 75000,
+      assignedUnderwriter: 'Sarah Jenkins (Senior UW)',
+      intakeDate: '2026-08-24T10:30:00.000Z'
+    });
+  }
+
   private setupReactiveFilter(): void {
     this.filterForm.controls.filterDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -110,7 +178,6 @@ export class SubmissionsListPage implements OnInit {
         if (!date) {
           this.submissions.set(this.allSubmissions);
         } else {
-          // Pure reactive filtering without manual button triggers
           this.submissions.set(this.allSubmissions.filter(s => !!s.submissionNumber));
         }
       });

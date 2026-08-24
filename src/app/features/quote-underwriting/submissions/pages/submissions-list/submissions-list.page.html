@@ -4,7 +4,14 @@
       <h1>Submission Intake & Underwriting Triage Pipeline</h1>
       <p>Manage commercial broker submissions, risk score triages, appetite scoring, and underwriter assignment</p>
     </div>
-    <button *hasPermission="'QUOTE_CREATE'" class="btn btn-primary btn-sm">+ New Submission Intake</button>
+    <!-- Trigger Reusable Drawer Button -->
+    <button type="button" (click)="openIntakeDrawer()" class="btn btn-primary btn-sm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>+ New Submission Intake</span>
+    </button>
   </div>
 
   <!-- Reactive Filter Toolbar using AppDatepicker -->
@@ -30,3 +37,95 @@
     (refreshClicked)="loadSubmissions()"
   />
 </div>
+
+<!-- ========================================================================= -->
+<!-- 📦 REUSABLE DRAWER 2: SUBMISSIONS INTAKE DRAWER (Custom Form Content)     -->
+<!-- ========================================================================= -->
+<app-drawer
+  [isOpen]="isIntakeDrawerOpen"
+  title="New Commercial Submission Intake"
+  subtitle="Ingest broker package, assign triage underwriting priority, and set binding deadline"
+  size="lg"
+  [showFooter]="true"
+  (closed)="closeIntakeDrawer()"
+>
+  <form [formGroup]="intakeForm" class="drawer-form-grid">
+
+    
+    <div class="form-row single-col">
+      <div class="form-col">
+        <label class="form-label">Named Insured Legal Entity <span class="required">*</span></label>
+        <input
+          type="text"
+          formControlName="insuredName"
+          placeholder="e.g. Apex Global Logistics & Transport Corp"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-col">
+        <label class="form-label">Brokerage / Source Agency <span class="required">*</span></label>
+        <select formControlName="brokerageAgency" class="form-control">
+          <option value="Aon Risk Solutions">Aon Risk Solutions</option>
+          <option value="Marsh & McLennan">Marsh & McLennan</option>
+          <option value="Willis Towers Watson">Willis Towers Watson</option>
+          <option value="Arthur J. Gallagher">Arthur J. Gallagher</option>
+          <option value="Brown & Brown">Brown & Brown</option>
+          <option value="Direct Digital Portal">Direct Digital Portal</option>
+        </select>
+      </div>
+      <div class="form-col">
+        <label class="form-label">Primary Line of Business <span class="required">*</span></label>
+        <select formControlName="lineOfBusiness" class="form-control">
+          <option value="Commercial Property">Commercial Property</option>
+          <option value="General Liability">General Liability</option>
+          <option value="Inland Marine">Inland Marine</option>
+          <option value="Cyber Risk & Privacy">Cyber Risk & Privacy</option>
+          <option value="Commercial Umbrella">Commercial Umbrella</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-col">
+        <label class="form-label">Total Insured Value (TIV) ($) <span class="required">*</span></label>
+        <input
+          type="number"
+          formControlName="totalInsuredValue"
+          placeholder="5000000"
+          class="form-control"
+        />
+      </div>
+      <div class="form-col">
+        <label class="form-label">Assigned Lead Underwriter <span class="required">*</span></label>
+        <select formControlName="assignedUnderwriter" class="form-control">
+          <option value="Sarah Jenkins (Senior UW)">Sarah Jenkins (Senior UW)</option>
+          <option value="David Martinez (Lead)">David Martinez (Lead)</option>
+          <option value="Alex Thompson (Specialty)">Alex Thompson (Specialty)</option>
+          <option value="Elena Rostova (Property)">Elena Rostova (Property)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Reusable AppDatepicker inside the Submissions Drawer -->
+    <div class="form-row single-col">
+      <app-datepicker
+        formControlName="intakeDate"
+        label="Submission Ingestion Timestamp"
+        [startYear]="2020"
+        [enableTime]="true"
+        hint="Recorded timestamp for SLA and appetite triage calculation"
+      />
+    </div>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="closeIntakeDrawer()">Cancel</button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="submitIntake()">Ingest & Triage Submission</button>
+  </div>
+</app-drawer>
+
+
+<!-- <app-select [label]="'Line of Business (LOB)'" [placeholder]="'Choose Insurance Line...'" [options]="[{value: 'COMMERCIAL_PROPERTY', label: 'Commercial Property & Business Income'}, {value: 'GENERAL_LIABILITY', label: 'Commercial General Liability (CGL)'}, {value: 'CYBER_RISK', label: 'Enterprise Cyber Risk & Tech E&O'}, {value: 'INLAND_MARINE', label: 'Global Supply Chain & Inland Marine'}, {value: 'DIRECTORS_OFFICERS', label: 'Directors & Officers (D&O) Liability'}]" [required]="true" [hint]="'Select the primary regulatory line of business for statutory reporting'"></app-select> -->

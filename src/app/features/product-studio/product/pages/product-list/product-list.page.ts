@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';
 import { DrawerComponent } from '@shared/components/drawer/drawer.component';
-import { InsuranceProduct } from '../../models/product.models';
+import { InsuranceProduct, LineOfBusiness } from '../../models/product.models';
 import { ProductService } from '../../services/product.service';
 
 @Component({
@@ -34,13 +34,21 @@ export class ProductListPage implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
 
-  // Modern scheduling/expiry form with Date + Time support
+  // Filter toolbar form
   scheduleForm = this.fb.group({
     expiryDate: ['2026-12-31T23:59:00.000Z']
   });
 
-  isDrawerOpen = false;
-  issalmanDrawerOpen = false;
+  // Reusable Drawer State & Form
+  isProductDrawerOpen = false;
+  productForm = this.fb.group({
+    code: ['', [Validators.required]],
+    name: ['', [Validators.required]],
+    lineOfBusiness: ['COMMERCIAL_PROPERTY' as LineOfBusiness, [Validators.required]],
+    annualGWP: [1500000, [Validators.required]],
+    effectiveDate: ['2025-06-01T09:00:00.000Z', [Validators.required]],
+    status: ['DRAFT']
+  });
 
   columnDefs: ColDef<InsuranceProduct>[] = [
     {
@@ -123,16 +131,44 @@ export class ProductListPage implements OnInit {
     this.router.navigate(['/product-studio/products', product.id]);
   }
 
-  openDrawer(): void {
-    this.isDrawerOpen = true;
+  // Drawer Controls
+  openProductDrawer(): void {
+    this.isProductDrawerOpen = true;
   }
 
-  opensalmanDrawer(): void {
-    this.issalmanDrawerOpen = true;
+  closeProductDrawer(): void {
+    this.isProductDrawerOpen = false;
   }
 
-  closeDrawer(): void {
-    this.isDrawerOpen = false;
-    this.issalmanDrawerOpen = false;
+  saveProduct(): void {
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      return;
+    }
+    const val = this.productForm.value;
+    const newProduct: InsuranceProduct = {
+      id: `prod_${Date.now()}`,
+      code: val.code || 'GL-NEW',
+      name: val.name || 'Untitled Product',
+      lineOfBusiness: (val.lineOfBusiness as LineOfBusiness) || 'COMMERCIAL_PROPERTY',
+      version: '1.0.0',
+      effectiveDate: val.effectiveDate || '2025-06-01',
+      status: 'DRAFT',
+      jurisdiction: ['US-ALL'],
+      coveragesCount: 4,
+      activePoliciesCount: 0,
+      annualGWP: Number(val.annualGWP) || 1000000,
+      updatedAt: new Date().toISOString().substring(0, 10),
+      updatedBy: 'Lead Product Architect'
+    };
+
+    this.products.update(list => [newProduct, ...list]);
+    this.closeProductDrawer();
+    this.productForm.reset({
+      lineOfBusiness: 'COMMERCIAL_PROPERTY',
+      annualGWP: 1500000,
+      effectiveDate: '2025-06-01T09:00:00.000Z',
+      status: 'DRAFT'
+    });
   }
 }
