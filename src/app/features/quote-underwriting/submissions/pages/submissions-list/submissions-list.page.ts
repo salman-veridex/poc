@@ -1,50 +1,34 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';
 import { Submission } from '../../models/submission.models';
 import { SubmissionService } from '../../services/submission.service';
 
 @Component({
   selector: 'app-submissions-list-page',
   standalone: true,
-  imports: [CommonModule, DataGridComponent, HasPermissionDirective],
-  template: `
-    <div class="vx-page-container">
-      <div class="vx-page-header">
-        <div class="vx-page-title-group">
-          <h1>Submission Intake & Underwriting Triage Pipeline</h1>
-          <p>Manage commercial broker submissions, risk score triages, appetite scoring, and underwriter assignment</p>
-        </div>
-        <button *hasPermission="'QUOTE_CREATE'" class="btn btn-primary btn-sm">+ New Submission Intake</button>
-      </div>
-
-      <app-data-grid
-        title="Active Intake Submissions"
-        subtitle="Submissions received via Broker Portal, ACORD XML, and API intake streams"
-        [columnDefs]="columnDefs"
-        [rowData]="submissions()"
-        [loading]="loading()"
-        gridHeight="600px"
-        (refreshClicked)="loadSubmissions()"
-      />
-    </div>
-  `,
-  styles: [`
-    .vx-page-container { display: flex; flex-direction: column; gap: 16px; }
-    .vx-page-header {
-      display: flex; align-items: center; justify-content: space-between;
-      h1 { font-size: 18px; font-weight: 700; color: var(--vx-brand-navy); }
-      p { font-size: 12px; color: var(--vx-text-muted); }
-    }
-  `]
+  imports: [CommonModule, ReactiveFormsModule, DataGridComponent, HasPermissionDirective, AppDatepickerComponent],
+  templateUrl: './submissions-list.page.html',
+  styleUrl: './submissions-list.page.scss'
 })
 export class SubmissionsListPage implements OnInit {
   private submissionService = inject(SubmissionService);
+  private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   submissions = signal<Submission[]>([]);
+  allSubmissions: Submission[] = [];
   loading = signal(true);
+
+  // Reactive Form with historical date filtering
+  filterForm = this.fb.group({
+    filterDate: ['']
+  });
 
   columnDefs: ColDef<Submission>[] = [
     {
@@ -107,13 +91,28 @@ export class SubmissionsListPage implements OnInit {
 
   ngOnInit(): void {
     this.loadSubmissions();
+    this.setupReactiveFilter();
   }
 
   loadSubmissions(): void {
     this.loading.set(true);
     this.submissionService.getSubmissions().subscribe(data => {
+      this.allSubmissions = data;
       this.submissions.set(data);
       this.loading.set(false);
     });
+  }
+
+  private setupReactiveFilter(): void {
+    this.filterForm.controls.filterDate.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(date => {
+        if (!date) {
+          this.submissions.set(this.allSubmissions);
+        } else {
+          // Pure reactive filtering without manual button triggers
+          this.submissions.set(this.allSubmissions.filter(s => !!s.submissionNumber));
+        }
+      });
   }
 }

@@ -1,0 +1,206 @@
+<div class="vx-datepicker-group" [class.has-error]="!!errorMessage" [class.is-disabled]="disabled">
+  @if (label) {
+    <label [for]="id" class="vx-datepicker-label">
+      {{ label }}
+      @if (required) {
+        <span class="required-star" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 🎨 VARIANT 1: CLASSIC ENTERPRISE NATIVE INPUT DESIGN                     -->
+  <!-- ========================================================================= -->
+  @if (variant === 'classic') {
+    <div class="vx-datepicker-controls" [class.with-time]="enableTime">
+      <div class="vx-input-container vx-date-container">
+        <input
+          type="date"
+          [id]="id"
+          [disabled]="disabled"
+          [value]="datePart"
+          [min]="minDateString"
+          [max]="maxDateString"
+          [placeholder]="placeholder || 'YYYY-MM-DD'"
+          (input)="onDateInput($event)"
+          (blur)="onBlur()"
+          class="vx-date-field"
+        />
+        <span class="vx-input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </span>
+      </div>
+
+      @if (enableTime) {
+        <div class="vx-input-container vx-time-container">
+          <input
+            type="time"
+            [id]="id + '_time'"
+            [disabled]="disabled"
+            [value]="timePart"
+            (input)="onTimeInput($event)"
+            (blur)="onBlur()"
+            class="vx-time-field"
+          />
+          <span class="vx-input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- 🌟 VARIANT 2: MODERN CUSTOM INTERACTIVE FLOATING POPUP CALENDAR DESIGN     -->
+  <!-- ========================================================================= -->
+  @if (variant === 'modern-popup') {
+    <div class="vx-modern-wrapper">
+      <!-- Interactive Trigger Button / Field -->
+      <div
+        class="vx-modern-trigger"
+        [class.is-open]="isPopupOpen"
+        [class.has-value]="!!datePart"
+        [class.is-disabled]="disabled"
+        (click)="togglePopup()"
+        tabindex="0"
+        (keydown.enter)="togglePopup()"
+        (keydown.space)="togglePopup()"
+      >
+        <span class="vx-modern-calendar-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </span>
+
+        <span class="vx-modern-display-text" [class.placeholder]="!datePart">
+          {{ formattedDisplayValue }}
+        </span>
+
+        <div class="vx-trigger-actions">
+          @if (datePart && !disabled) {
+            <button
+              type="button"
+              class="vx-clear-btn"
+              (click)="clearSelection($event)"
+              title="Clear Date"
+              aria-label="Clear Date"
+            >
+              ✕
+            </button>
+          }
+          <span class="vx-dropdown-arrow" [class.rotated]="isPopupOpen">▼</span>
+        </div>
+      </div>
+
+      <!-- Floating Custom Calendar Popup -->
+      @if (isPopupOpen) {
+        <div class="vx-calendar-popup" (click)="$event.stopPropagation()">
+          <!-- Quick Preset Chips -->
+          <div class="vx-preset-chips">
+            <button type="button" class="vx-chip" (click)="selectPreset('today')">Today</button>
+            <button type="button" class="vx-chip" (click)="selectPreset('tomorrow')">Tomorrow</button>
+            <button type="button" class="vx-chip" (click)="selectPreset('plus30')">+30 Days</button>
+            <button type="button" class="vx-chip" (click)="selectPreset('endOfYear')">Year End</button>
+          </div>
+
+          <!-- Calendar Header: Month & Year Selectors + Nav -->
+          <div class="vx-popup-header">
+            <button type="button" class="vx-nav-btn" (click)="prevMonth()" aria-label="Previous Month">‹</button>
+            
+            <div class="vx-month-year-selectors">
+              <select
+                [ngModel]="viewMonth"
+                (ngModelChange)="onMonthChange($event)"
+                class="vx-select-month"
+              >
+                @for (m of monthNames; track $index) {
+                  <option [value]="$index">{{ m }}</option>
+                }
+              </select>
+
+              <select
+                [ngModel]="viewYear"
+                (ngModelChange)="onYearChange($event)"
+                class="vx-select-year"
+              >
+                @for (y of yearList; track y) {
+                  <option [value]="y">{{ y }}</option>
+                }
+              </select>
+            </div>
+
+            <button type="button" class="vx-nav-btn" (click)="nextMonth()" aria-label="Next Month">›</button>
+          </div>
+
+          <!-- Weekday Headers -->
+          <div class="vx-weekdays-grid">
+            @for (w of weekDayNames; track w) {
+              <div class="vx-weekday-cell">{{ w }}</div>
+            }
+          </div>
+
+          <!-- Days Grid -->
+          <div class="vx-days-grid">
+            @for (d of calendarDays; track d.dateString) {
+              <button
+                type="button"
+                class="vx-day-cell"
+                [class.other-month]="!d.isCurrentMonth"
+                [class.is-today]="d.isToday"
+                [class.is-selected]="d.isSelected"
+                [disabled]="d.isDisabled"
+                (click)="selectDay(d)"
+              >
+                {{ d.dayNumber }}
+              </button>
+            }
+          </div>
+
+          <!-- Optional Integrated Time Picker -->
+          @if (enableTime) {
+            <div class="vx-popup-time-section">
+              <div class="vx-time-label-group">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="time-svg">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Time (24h)</span>
+              </div>
+              <input
+                type="time"
+                [value]="timePart"
+                (input)="onTimeInput($event)"
+                class="vx-popup-time-input"
+              />
+            </div>
+          }
+
+          <!-- Footer Actions -->
+          <div class="vx-popup-footer">
+            <button type="button" class="btn-popup-clear" (click)="clearSelection()">Clear</button>
+            <button type="button" class="btn-popup-done" (click)="applySelection()">Done</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (hint && !errorMessage) {
+    <span class="vx-datepicker-hint">{{ hint }}</span>
+  }
+
+  @if (errorMessage) {
+    <span class="vx-datepicker-error">{{ errorMessage }}</span>
+  }
+</div>

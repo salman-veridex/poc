@@ -8,26 +8,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
 
-  .vx-page-title-group {
-    h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--vx-brand-navy);
-    }
-    p {
-      font-size: 12px;
-      color: var(--vx-text-muted);
-      margin-top: 2px;
-    }
+  h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--vx-brand-navy, #0f172a);
   }
 
-  .vx-page-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  p {
+    font-size: 12px;
+    color: var(--vx-text-muted, #64748b);
   }
 }
 
@@ -41,6 +31,6 @@
   border: 1px solid var(--vx-border-light, #e2e8f0);
 
   .filter-item {
-    width: 320px;
+    width: 260px;
   }
 }

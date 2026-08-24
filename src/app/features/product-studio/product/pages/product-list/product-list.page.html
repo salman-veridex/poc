@@ -16,6 +16,20 @@
     </div>
   </div>
 
+  <!-- Scheduling & Expiry Toolbar starting from 2025 onwards -->
+  <div class="vx-filter-toolbar" [formGroup]="scheduleForm">
+    <div class="filter-item">
+      <app-datepicker   
+        formControlName="expiryDate"
+        label="Product Launch / Expiry Date"
+        [startYear]="2020"
+        minDate="2020-01-01"
+
+        hint="2025 ke baad ke dates select karein"
+      />
+    </div>
+  </div>
+
   <!-- AG Grid Enterprise Table -->
   <app-data-grid
     title="Product Portfolio"
@@ -24,21 +38,14 @@
     [rowData]="products()"
     [loading]="loading()"
     [error]="error()"
-    [showExport]="true"
+    [showExport]="false"
     gridHeight="600px"
     (rowDoubleClicked)="onRowDoubleClicked($event)"
     (refreshClicked)="loadProducts()"
   />
 </div>
 
-
-
-<button type="button" (click)="openDrawer()">
-  Add Product
-</button>
-
-
-<!-- <app-drawer
+<app-drawer
   [isOpen]="isDrawerOpen"
   title="Create Product"
   subtitle="Create a new insurance product"
@@ -46,37 +53,20 @@
   [showFooter]="true"
   (closed)="closeDrawer()"
 >
-  
-
   <div>
     <h4>Product Information</h4>
-
     <div>
       <label>Product Name</label>
       <input type="text" />
     </div>
-
     <div>
       <label>Product Code</label>
       <input type="text" />
     </div>
   </div>
 
-
-
   <div drawerFooter>
-
-    <button
-      type="button"
-      (click)="closeDrawer()"
-    >
-      Cancel
-    </button>
-
-    <button type="button">
-      Save Product
-    </button>
-
+    <button type="button" (click)="closeDrawer()">Cancel</button>
+    <button type="button">Save Product</button>
   </div>
-
-</app-drawer> -->
+</app-drawer>

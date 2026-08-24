@@ -1,26 +1,46 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
+import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';
+import { DrawerComponent } from '@shared/components/drawer/drawer.component';
 import { InsuranceProduct } from '../../models/product.models';
 import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-product-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, DataGridComponent, HasPermissionDirective],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ReactiveFormsModule,
+    DataGridComponent,
+    HasPermissionDirective,
+    DrawerComponent,
+    AppDatepickerComponent
+  ],
   templateUrl: './product-list.page.html',
   styleUrl: './product-list.page.scss'
 })
 export class ProductListPage implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
 
   products = signal<InsuranceProduct[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  // Modern scheduling/expiry form with Date + Time support
+  scheduleForm = this.fb.group({
+    expiryDate: ['2026-12-31T23:59:00.000Z']
+  });
+
+  isDrawerOpen = false;
+  issalmanDrawerOpen = false;
 
   columnDefs: ColDef<InsuranceProduct>[] = [
     {
@@ -103,13 +123,16 @@ export class ProductListPage implements OnInit {
     this.router.navigate(['/product-studio/products', product.id]);
   }
 
-    isDrawerOpen = false;
-
   openDrawer(): void {
     this.isDrawerOpen = true;
   }
 
+  opensalmanDrawer(): void {
+    this.issalmanDrawerOpen = true;
+  }
+
   closeDrawer(): void {
     this.isDrawerOpen = false;
+    this.issalmanDrawerOpen = false;
   }
 }
