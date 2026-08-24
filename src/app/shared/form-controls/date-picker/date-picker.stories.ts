@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { DatePickerComponent } from './date-picker.component';
 
 const meta: Meta<DatePickerComponent> = {

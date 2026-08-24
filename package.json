@@ -15,12 +15,13 @@
   "private": true,
   "packageManager": "npm@10.9.2",
   "dependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/compiler": "^21.2.0",
-    "@angular/core": "^21.2.0",
-    "@angular/forms": "^21.2.0",
-    "@angular/platform-browser": "^21.2.0",
-    "@angular/router": "^21.2.0",
+    "@angular/animations": "^21.2.21",
+    "@angular/common": "^21.2.21",
+    "@angular/compiler": "^21.2.21",
+    "@angular/core": "^21.2.21",
+    "@angular/forms": "^21.2.21",
+    "@angular/platform-browser": "^21.2.21",
+    "@angular/router": "^21.2.21",
     "@lucide/angular": "^1.33.0",
     "ag-grid-angular": "^36.1.0",
     "ag-grid-community": "^36.1.0",
@@ -29,17 +30,16 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.7.0",
     "@angular/build": "^21.2.21",
-    "@angular/cli": "^21.2.0",
-    "@angular/compiler-cli": "^21.2.0",
+    "@angular/cli": "^21.2.21",
+    "@angular/compiler-cli": "^21.2.21",
     "@compodoc/compodoc": "^2.0.0",
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-interactions": "^8.6.14",
-    "@storybook/angular": "^8.6.14",
-    "@storybook/blocks": "^8.6.14",
-    "@storybook/test": "^8.6.14",
+    "@storybook/addon-docs": "^10.5.10",
+    "@storybook/angular-vite": "^10.5.10",
     "prettier": "^3.8.1",
-    "storybook": "^8.6.14",
-    "typescript": "~5.9.2"
+    "storybook": "^10.5.10",
+    "typescript": "~5.9.2",
+    "vite": "^8.2.2"
   }
 }

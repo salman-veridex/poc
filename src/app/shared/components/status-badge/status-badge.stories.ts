@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { StatusBadgeComponent } from './status-badge.component';
 
 const meta: Meta<StatusBadgeComponent> = {

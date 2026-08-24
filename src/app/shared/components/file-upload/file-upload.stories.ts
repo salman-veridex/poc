@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { FileUploadComponent } from './file-upload.component';
 
 const meta: Meta<FileUploadComponent> = {

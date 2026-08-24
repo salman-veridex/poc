@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { ModalComponent } from './modal.component';
 
 const meta: Meta<ModalComponent> = {

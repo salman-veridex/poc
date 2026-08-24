@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { ErrorStateComponent } from './error-state.component';
 
 const meta: Meta<ErrorStateComponent> = {

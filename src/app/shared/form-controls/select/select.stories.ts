@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { SelectComponent } from './select.component';
 
 const meta: Meta<SelectComponent> = {

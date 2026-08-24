@@ -1,6 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
-import type { Preview } from '@storybook/angular';
-import { applicationConfig } from '@storybook/angular';
+import type { Preview } from '@storybook/angular-vite';
+import { applicationConfig } from '@storybook/angular-vite';
 
 const preview: Preview = {
   decorators: [

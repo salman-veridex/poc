@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 
 const meta: Meta<ConfirmationDialogComponent> = {

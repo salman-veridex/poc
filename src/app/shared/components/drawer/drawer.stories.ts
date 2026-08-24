@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { DrawerComponent } from './drawer.component';
 
 const meta: Meta<DrawerComponent> = {

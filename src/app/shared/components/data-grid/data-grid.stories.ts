@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { ColDef } from 'ag-grid-community';
 import { DataGridComponent } from './data-grid.component';
 

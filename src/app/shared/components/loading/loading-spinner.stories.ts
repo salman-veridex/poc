@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { LoadingSpinnerComponent } from './loading-spinner.component';
 
 const meta: Meta<LoadingSpinnerComponent> = {

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { TextInputComponent } from './text-input.component';
 
 const meta: Meta<TextInputComponent> = {
