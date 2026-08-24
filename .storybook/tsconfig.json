@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.app.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../out-tsc/storybook",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "types": []
+  },
+  "exclude": [
+    "../src/**/*.spec.ts"
+  ],
+  "include": [
+    "../src/**/*.stories.ts",
+    "../src/**/*.d.ts",
+    "../src/**/*.ts",
+    "*.ts"
+  ]
+}

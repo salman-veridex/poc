@@ -6,6 +6,18 @@ const config: StorybookConfig = {
   framework: {
     name: '@storybook/angular-vite',
     options: {}
+  },
+  async viteFinal(config) {
+    return {
+      ...config,
+      resolve: {
+        ...config.resolve,
+        alias: {
+          ...config.resolve?.alias,
+          '@storybook/blocks': '@storybook/addon-docs/blocks'
+        }
+      }
+    };
   }
 };
 
