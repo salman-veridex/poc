@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { ColDef } from 'ag-grid-community';
+import { ColDef } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from './data-grid.component';
 
 interface MockInsuranceRow {

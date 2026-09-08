@@ -1,161 +1,167 @@
-<div class="vx-grid-wrapper" [class.is-dense]="isDense()">
-  <!-- Enterprise Grid Toolbar -->
-  <div class="vx-grid-toolbar">
-    <div class="vx-toolbar-left">
-      @if (title) {
-        <div class="vx-toolbar-heading">
-          <div class="vx-toolbar-title-row">
-            <h3 class="vx-toolbar-title">{{ title }}</h3>
-            @if (rowData) {
-              <span class="vx-row-counter-badge">{{ totalCount !== undefined ? totalCount : rowData.length }} records</span>
-            }
-          </div>
-          @if (subtitle) {
-            <p class="vx-toolbar-subtitle">{{ subtitle }}</p>
-          }
-        </div>
-      }
-
-      @if (selectedCount() > 0) {
-        <div class="vx-selection-banner">
-          <span class="vx-selection-text">{{ selectedCount() }} selected</span>
-          <ng-content select="[selectionActions]"></ng-content>
-        </div>
-      }
+<div class="vx-grid-wrapper">
+  <!-- Grid Header Toolbar -->
+  <div class="vx-grid-toolbar" *ngIf="title || showQuickFilter || showExport || showRefresh || showDensityToggle">
+    <div class="vx-grid-title-group" *ngIf="title">
+      <h3 class="vx-grid-title">{{ title }}</h3>
+      <p class="vx-grid-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
     </div>
 
-    <div class="vx-toolbar-right">
-      <!-- Quick Filter Search Input -->
-      @if (showQuickFilter) {
-        <div class="vx-quick-search-box">
-          <svg class="vx-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            type="text"
-            [value]="searchTerm()"
-            (input)="onQuickFilterChanged($event)"
-            placeholder="Quick search records..."
-          />
-          @if (searchTerm()) {
-            <button class="vx-clear-search-btn" (click)="clearSearch()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          }
-        </div>
-      }
-
-      <!-- Custom Toolbar Action Slots -->
-      <ng-content select="[toolbarActions]"></ng-content>
-
-      <!-- Density Toggle Button -->
-      @if (showDensityToggle) {
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="toggleDensity()"
-          [title]="isDense() ? 'Comfortable View' : 'Compact View'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-          <span>{{ isDense() ? 'Compact' : 'Density' }}</span>
-        </button>
-      }
-
-      <!-- Export Button -->
-      @if (showExport) {
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="exportCsv()"
-          title="Export CSV">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          <span>Export</span>
-        </button>
-      }
+    <div class="vx-grid-actions-group">
+      <!-- Quick Search Filter -->
+      <p-iconfield iconPosition="left" *ngIf="showQuickFilter">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Search records..."
+          [value]="searchTerm()"
+          (input)="onQuickFilterChanged($event)"
+          class="p-inputtext-sm vx-search-input"
+        />
+        <p-inputicon
+          *ngIf="searchTerm()"
+          class="pi pi-times cursor-pointer"
+          (click)="clearSearch()"
+        ></p-inputicon>
+      </p-iconfield>
 
       <!-- Refresh Button -->
-      @if (showRefresh) {
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm btn-icon"
-          (click)="onRefresh()"
-          [disabled]="loading"
-          title="Refresh Data">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.animate-spin]="loading" style="width: 13px; height: 13px;">
-            <polyline points="23 4 23 10 17 10"/>
-            <polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-          </svg>
-        </button>
-      }
+      <p-button
+        *ngIf="showRefresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        pTooltip="Refresh Data"
+        tooltipPosition="top"
+        (onClick)="onRefresh()"
+      ></p-button>
+
+      <!-- Density Toggle -->
+      <p-button
+        *ngIf="showDensityToggle"
+        [icon]="isDense() ? 'pi pi-bars' : 'pi pi-list'"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        [pTooltip]="isDense() ? 'Comfortable Density' : 'Compact Density'"
+        tooltipPosition="top"
+        (onClick)="toggleDensity()"
+      ></p-button>
+
+      <!-- CSV Export -->
+      <p-button
+        *ngIf="showExport"
+        icon="pi pi-download"
+        label="Export CSV"
+        severity="primary"
+        [outlined]="true"
+        size="small"
+        (onClick)="exportCsv()"
+      ></p-button>
     </div>
   </div>
 
-  <!-- Main Grid Surface -->
-  <div class="vx-grid-body-container" [style.height]="gridHeight">
-    <!-- AG Grid Table Instance -->
-    <ag-grid-angular
-      class="ag-theme-quartz vx-ag-grid-instance"
-      [rowData]="rowData"
-      [columnDefs]="columnDefs"
-      [defaultColDef]="defaultColDef"
-      [gridOptions]="gridOptions"
-      [pagination]="pagination"
-      [paginationPageSize]="pageSize"
-      (gridReady)="onGridReady($event)"
-      (selectionChanged)="onSelectionChanged($event)"
-      (rowClicked)="onRowClicked($event)"
-      (rowDoubleClicked)="onRowDoubleClicked($event)"
-    />
+  <!-- Selected rows counter banner -->
+  <div class="vx-selection-banner" *ngIf="selectedRows().length > 0">
+    <span><strong>{{ selectedRows().length }}</strong> row(s) selected</span>
+  </div>
 
-    <!-- Loading Overlay -->
-    @if (loading) {
-      <div class="vx-grid-loading-overlay">
-        <div class="vx-spinner"></div>
-        <span>Retrieving insurance records...</span>
-      </div>
-    }
+  <!-- PrimeNG Table -->
+  <div class="vx-grid-table-container">
+    <p-table
+      #dt
+      [value]="rowData || []"
+      [loading]="loading"
+      [paginator]="pagination"
+      [rows]="pageSize"
+      [rowsPerPageOptions]="[10, 20, 50, 100]"
+      [globalFilterFields]="filterFields()"
+      [selectionMode]="selectionMode === 'single' ? 'single' : undefined"
+      [selection]="selectedRows()"
+      (selectionChange)="onSelectionChange($event)"
+      [class]="isDense() ? 'p-datatable-sm p-datatable-gridlines' : 'p-datatable-gridlines'"
+      [scrollable]="true"
+      [scrollHeight]="gridHeight"
+    >
+      <!-- Table Header -->
+      <ng-template #header pTemplate="header">
+        <tr>
+          <!-- Selection Checkbox Header -->
+          <th style="width: 3rem" *ngIf="selectionMode === 'multiple' && hasCheckboxSelection()">
+            <p-tableheadercheckbox></p-tableheadercheckbox>
+          </th>
 
-    <!-- Error State -->
-    @if (error) {
-      <div class="vx-grid-error-overlay">
-        <div class="vx-error-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        </div>
-        <h4>Failed to Load Grid Data</h4>
-        <p>{{ error }}</p>
-        <button class="btn btn-secondary btn-sm" (click)="onRefresh()">Retry Query</button>
-      </div>
-    }
+          <!-- Columns -->
+          <th
+            *ngFor="let col of visibleColumns()"
+            [pSortableColumn]="col.sortable !== false ? col.field : undefined"
+            [style.width]="col.width ? col.width + 'px' : undefined"
+            [style.minWidth]="col.minWidth ? col.minWidth + 'px' : '100px'"
+          >
+            <div class="flex items-center justify-between">
+              <span>{{ col.headerName || col.field }}</span>
+              <p-sorticon *ngIf="col.sortable !== false && col.field" [field]="col.field!"></p-sorticon>
+            </div>
+          </th>
 
-    <!-- Empty State -->
-    @if (!loading && !error && (!rowData || rowData.length === 0)) {
-      <div class="vx-grid-empty-overlay">
-        <div class="vx-empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-        </div>
-        <h4>{{ emptyTitle }}</h4>
-        <p>{{ emptyMessage }}</p>
-      </div>
-    }
+          <!-- Row Actions Column Header -->
+          <th *ngIf="actions.length > 0" style="width: 120px" class="text-center">Actions</th>
+        </tr>
+      </ng-template>
+
+      <!-- Table Body -->
+      <ng-template #body pTemplate="body" let-rowData>
+        <tr
+          (click)="onRowClick(rowData)"
+          (dblclick)="onRowDblClick(rowData)"
+          class="cursor-pointer"
+        >
+          <!-- Selection Checkbox Cell -->
+          <td *ngIf="selectionMode === 'multiple' && hasCheckboxSelection()">
+            <p-tablecheckbox [value]="rowData"></p-tablecheckbox>
+          </td>
+
+          <!-- Data Cells -->
+          <td *ngFor="let col of visibleColumns()" [ngStyle]="getCellStyle(rowData, col)">
+            <span [innerHTML]="getCellValue(rowData, col)"></span>
+          </td>
+
+          <!-- Row Actions Cell -->
+          <td *ngIf="actions.length > 0" class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <ng-container *ngFor="let action of actions">
+                <p-button
+                  *ngIf="!action.isVisible || action.isVisible(rowData)"
+                  [icon]="action.icon || 'pi pi-ellipsis-h'"
+                  [label]="!action.icon ? action.label : ''"
+                  [pTooltip]="action.label"
+                  tooltipPosition="top"
+                  [disabled]="action.isDisabled ? action.isDisabled(rowData) : false"
+                  [text]="true"
+                  [rounded]="true"
+                  size="small"
+                  [severity]="action.variant === 'danger' ? 'danger' : 'secondary'"
+                  (onClick)="$event.stopPropagation(); action.onClick(rowData)"
+                ></p-button>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty State -->
+      <ng-template #emptymessage pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="visibleColumns().length + (hasCheckboxSelection() ? 1 : 0) + (actions.length > 0 ? 1 : 0)" class="text-center py-8">
+            <div class="vx-empty-container">
+              <i class="pi pi-inbox text-4xl text-slate-400 mb-2"></i>
+              <p class="font-semibold text-slate-700">{{ emptyTitle }}</p>
+              <p class="text-xs text-slate-500 mt-1">{{ emptyMessage }}</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   </div>
 </div>

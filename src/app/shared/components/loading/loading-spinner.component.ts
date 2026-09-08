@@ -1,13 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { ProgressSpinner, ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-loading-spinner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProgressSpinnerModule, ProgressSpinner],
   template: `
     <div class="vx-loading-container" [class.is-inline]="inline" [class.is-fullscreen]="fullscreen">
-      <div class="vx-spinner" [class]="'size-' + size"></div>
+      <p-progress-spinner
+        [style]="getSpinnerStyle()"
+        strokeWidth="4"
+        fill="transparent"
+        animationDuration=".8s"
+      ></p-progress-spinner>
       @if (message) {
         <span class="vx-loading-msg">{{ message }}</span>
       }
@@ -37,24 +43,9 @@ import { Component, Input } from '@angular/core';
       }
     }
 
-    .vx-spinner {
-      border: 3px solid rgba(0, 82, 204, 0.15);
-      border-top-color: var(--vx-brand-primary);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-
-      &.size-sm { width: 16px; height: 16px; border-width: 2px; }
-      &.size-md { width: 28px; height: 28px; border-width: 3px; }
-      &.size-lg { width: 44px; height: 44px; border-width: 4px; }
-    }
-
     .vx-loading-msg {
       font-size: 12px;
       font-weight: 500;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
     }
   `]
 })
@@ -63,4 +54,9 @@ export class LoadingSpinnerComponent {
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() inline = false;
   @Input() fullscreen = false;
+
+  getSpinnerStyle() {
+    const dims = this.size === 'sm' ? '20px' : (this.size === 'lg' ? '48px' : '32px');
+    return { width: dims, height: dims };
+  }
 }

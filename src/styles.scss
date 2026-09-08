@@ -1,6 +1,5 @@
 /* Veridex Insurance ERP - Enterprise Global Design System */
-@import "ag-grid-community/styles/ag-grid.css";
-@import "ag-grid-community/styles/ag-theme-quartz.css";
+@import "primeicons/primeicons.css";
 
 :root {
   /* Brand & Corporate Palette */
@@ -82,6 +81,12 @@ html, body {
   color: var(--vx-text-primary);
   background-color: var(--vx-bg-app);
   -webkit-font-smoothing: antialiased;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
 }
 
 /* Typography styles */
@@ -222,32 +227,50 @@ a {
   }
 }
 
-/* Enterprise AG Grid Theme Tweaks */
-.ag-theme-quartz {
-  --ag-font-family: var(--vx-font-sans);
-  --ag-font-size: 12.5px;
-  --ag-grid-size: 6px;
-  --ag-header-height: 38px;
-  --ag-row-height: 42px;
-  --ag-header-background-color: #f8fafc;
-  --ag-header-foreground-color: #334155;
-  --ag-border-color: #e2e8f0;
-  --ag-row-border-color: #f1f5f9;
-  --ag-selected-row-background-color: #eff6ff;
-  --ag-row-hover-color: #f8fafc;
-  --ag-range-selection-border-color: #0052cc;
-  --ag-primary-color: #0052cc;
+/* Enterprise PrimeNG Global Theme Customizations */
+:root {
+  --p-primary-color: var(--vx-brand-primary);
+  --p-primary-hover-color: var(--vx-brand-primary-hover);
+  --p-primary-active-color: var(--vx-brand-navy);
+  --p-border-radius: var(--vx-radius-md);
+  --p-font-family: var(--vx-font-sans);
+}
 
-  .ag-header-cell-label {
+.p-datatable {
+  font-family: var(--vx-font-sans);
+  font-size: 12.5px;
+
+  .p-datatable-thead > tr > th {
+    background-color: #f8fafc;
+    color: #334155;
     font-weight: 600;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: #475569;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--vx-border-subtle);
   }
 
-  .ag-row {
-    transition: background-color 0.1s ease;
+  .p-datatable-tbody > tr {
+    transition: background-color 0.15s ease;
+    
+    > td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    &:hover {
+      background-color: #f8fafc;
+    }
+
+    &.p-highlight {
+      background-color: #eff6ff !important;
+      color: var(--vx-brand-primary);
+    }
+  }
+
+  &.p-datatable-sm .p-datatable-tbody > tr > td {
+    padding: 6px 10px;
   }
 }
 

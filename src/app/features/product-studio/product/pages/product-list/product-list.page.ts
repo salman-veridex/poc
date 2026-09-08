@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { ColDef, ICellRendererParams } from '@shared/components/data-grid/data-grid.types';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';

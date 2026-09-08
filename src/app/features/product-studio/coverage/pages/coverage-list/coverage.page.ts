@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
-import { ColDef } from 'ag-grid-community';
+import { ColDef } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 
 @Component({

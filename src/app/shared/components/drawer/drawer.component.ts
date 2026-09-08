@@ -1,137 +1,52 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Drawer, DrawerModule } from 'primeng/drawer';
+import { PrimeTemplate, SharedModule } from 'primeng/api';
 
 @Component({
   selector: 'app-drawer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DrawerModule, Drawer, SharedModule, PrimeTemplate],
   template: `
-    @if (isOpen) {
-      <div class="vx-drawer-backdrop" (click)="onBackdropClick($event)">
-        <div class="vx-drawer-panel" [class]="'drawer-' + size" role="dialog">
-          <!-- Drawer Header -->
-          <div class="vx-drawer-header">
-            <div class="vx-drawer-title-group">
-              <h3 class="vx-drawer-title">{{ title }}</h3>
-              @if (subtitle) {
-                <p class="vx-drawer-subtitle">{{ subtitle }}</p>
-              }
-            </div>
-            <button class="vx-drawer-close-btn" (click)="close()" title="Close side panel">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Drawer Body -->
-          <div class="vx-drawer-body">
-            <ng-content></ng-content>
-          </div>
-
-          <!-- Drawer Footer -->
-          @if (showFooter) {
-            <div class="vx-drawer-footer">
-              <ng-content select="[drawerFooter]"></ng-content>
-            </div>
-          }
+    <p-drawer
+      [visible]="isOpen"
+      (visibleChange)="onVisibleChange($event)"
+      position="right"
+      [style]="getDrawerWidth()"
+      [modal]="true"
+      (onHide)="close()"
+      [class]="'vx-prime-drawer drawer-' + size"
+    >
+      <ng-template pTemplate="header" *ngIf="title">
+        <div class="vx-drawer-title-group">
+          <h3 class="vx-drawer-title">{{ title }}</h3>
+          <p class="vx-drawer-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
         </div>
+      </ng-template>
+
+      <!-- Drawer Body -->
+      <div class="vx-drawer-body">
+        <ng-content></ng-content>
       </div>
-    }
+
+      <!-- Drawer Footer -->
+      <ng-template pTemplate="footer" *ngIf="showFooter">
+        <div class="vx-drawer-footer">
+          <ng-content select="[drawerFooter]"></ng-content>
+        </div>
+      </ng-template>
+    </p-drawer>
   `,
   styles: [`
-    .vx-drawer-backdrop {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(9, 30, 66, 0.45);
-      backdrop-filter: blur(1.5px);
-      z-index: 1000;
-      display: flex;
-      justify-content: flex-end;
-      animation: backdropFade 0.2s ease-out;
-    }
-
-    .vx-drawer-panel {
-      width: 100%;
-      height: 100%;
-      background-color: #ffffff;
-      box-shadow: var(--vx-shadow-drawer);
+    .vx-drawer-title-group {
       display: flex;
       flex-direction: column;
-      animation: slideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-
-      &.drawer-sm { max-width: 380px; }
-      &.drawer-md { max-width: 520px; }
-      &.drawer-lg { max-width: 720px; }
-      &.drawer-xl { max-width: 960px; }
+      .vx-drawer-title { font-size: 15px; font-weight: 700; color: var(--vx-text-primary); }
+      .vx-drawer-subtitle { font-size: 12px; color: var(--vx-text-muted); margin-top: 2px; }
     }
-
-    .vx-drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 22px;
-      border-bottom: 1px solid var(--vx-border-subtle);
-      background-color: #ffffff;
-
-      .vx-drawer-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--vx-text-primary);
-      }
-
-      .vx-drawer-subtitle {
-        font-size: 12px;
-        color: var(--vx-text-muted);
-        margin-top: 2px;
-      }
-
-      .vx-drawer-close-btn {
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: none;
-        border-radius: var(--vx-radius-sm);
-        cursor: pointer;
-        color: var(--vx-text-muted);
-
-        svg { width: 17px; height: 17px; }
-
-        &:hover {
-          background-color: var(--vx-bg-hover);
-          color: var(--vx-text-primary);
-        }
-      }
-    }
-
-    .vx-drawer-body {
-      flex: 1;
-      padding: 22px;
-      overflow-y: auto;
-    }
-
+    .vx-drawer-body { flex: 1; overflow-y: auto; padding: 10px 0; }
     .vx-drawer-footer {
-      padding: 14px 22px;
-      border-top: 1px solid var(--vx-border-subtle);
-      background-color: var(--vx-bg-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    @keyframes backdropFade {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes slideInRight {
-      from { transform: translateX(100%); }
-      to { transform: translateX(0); }
+      display: flex; align-items: center; justify-content: flex-end; gap: 10px; width: 100%;
     }
   `]
 })
@@ -145,15 +60,25 @@ export class DrawerComponent {
   @Output() isOpenChange = new EventEmitter<boolean>();
   @Output() closed = new EventEmitter<void>();
 
+  getDrawerWidth(): { width: string } {
+    switch (this.size) {
+      case 'sm': return { width: '380px' };
+      case 'md': return { width: '520px' };
+      case 'lg': return { width: '720px' };
+      case 'xl': return { width: '960px' };
+      default: return { width: '520px' };
+    }
+  }
+
+  onVisibleChange(visible: boolean): void {
+    if (!visible) {
+      this.close();
+    }
+  }
+
   close(): void {
     this.isOpen = false;
     this.isOpenChange.emit(false);
     this.closed.emit();
-  }
-
-  onBackdropClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('vx-drawer-backdrop')) {
-      this.close();
-    }
   }
 }

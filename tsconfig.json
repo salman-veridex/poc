@@ -6,7 +6,8 @@
       "@core/api": ["./src/app/core/api/index.ts"],
       "@shared/*": ["./src/app/shared/*"],
       "@features/*": ["./src/app/features/*"],
-      "@env/*": ["./src/environments/*"]
+      "@env/*": ["./src/environments/*"],
+      "ag-grid-community": ["./src/app/shared/components/data-grid/data-grid.types.ts"]
     },
     "strict": true,
     "noImplicitOverride": true,
