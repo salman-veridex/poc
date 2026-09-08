@@ -33,7 +33,7 @@ const mockRows: MockInsuranceRow[] = [
 ];
 
 const meta: Meta<DataGridComponent<MockInsuranceRow>> = {
-  title: 'Shared UI/Data Grid (AG Grid Quartz)',
+  title: 'Shared UI/Data Grid (PrimeNG Table)',
   component: DataGridComponent,
   tags: ['autodocs'],
   argTypes: {

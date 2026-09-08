@@ -11,9 +11,9 @@ const meta: Meta<DrawerComponent> = {
     subtitle: { control: 'text' },
     size: {
       control: { type: 'select' },
-      options: ['sm', 'md', 'lg', 'xl']
+      options: ['sm', 'md', 'lg', 'xl'],
     },
-    showFooter: { control: 'boolean' }
+    showFooter: { control: 'boolean' },
   },
   render: (args) => ({
     props: args,
@@ -30,8 +30,8 @@ const meta: Meta<DrawerComponent> = {
           <button style="padding: 6px 14px; background: #0052cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Save Endorsement</button>
         </div>
       </app-drawer>
-    `
-  })
+    `,
+  }),
 };
 
 export default meta;
@@ -43,6 +43,6 @@ export const MediumDrawer: Story = {
     title: 'Submission Triage Quick View',
     subtitle: 'SUB-2026-8812 - Apex Industrial Dynamics',
     size: 'md',
-    showFooter: true
-  }
+    showFooter: true,
+  },
 };
