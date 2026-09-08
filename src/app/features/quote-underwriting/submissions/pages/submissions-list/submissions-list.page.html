@@ -10,22 +10,39 @@
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
-      <span>+ New Submission Intake</span>
+      <span>+ New Submission Intake</span> &nbsp;
+
     </button>
+
+    
+         <button  class="btn btn-primary btn-sm" (click)="changeoutlet()"
+
+  
+  
+  >change theme</button>
   </div>
+
+ 
 
   <!-- Reactive Filter Toolbar using AppDatepicker -->
   <div class="vx-filter-toolbar" [formGroup]="filterForm">
+
+    
+
     <div class="filter-item">
       <app-datepicker
         formControlName="filterDate"
         label="Historical Filter Date"
         [startYear]="2015"
+        [variant]="theme"
         minDate="2015-01-01"
         hint="Filter records from year 2015 onwards"
       />
     </div>
   </div>
+
+
+   
 
   <app-data-grid
     title="Active Intake Submissions"

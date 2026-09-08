@@ -182,4 +182,13 @@ export class SubmissionsListPage implements OnInit {
         }
       });
   }
+
+  theme:any='classic'
+
+  
+  changeoutlet(){
+
+    this.theme='modern-popup'
+
+  }
 }
