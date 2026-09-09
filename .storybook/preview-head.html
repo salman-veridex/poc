@@ -1,0 +1,11 @@
+<script>
+  if (typeof document !== 'undefined' && !document.getElementById('p-license-host')) {
+    const el = document.createElement('div');
+    el.id = 'p-license-host';
+    el.style.display = 'none';
+    if (document.head) {
+      document.head.appendChild(el);
+    }
+  }
+</script>
+<div id="p-license-host" style="display: none !important;"></div>

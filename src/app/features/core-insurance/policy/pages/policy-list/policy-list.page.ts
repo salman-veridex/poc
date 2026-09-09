@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { ColDef, ICellRendererParams } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { PolicySchedule } from '../../models/policy.models';
 import { PolicyService } from '../../services/policy.service';

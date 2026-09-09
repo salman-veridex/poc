@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { ColDef, ICellRendererParams } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { Invoice } from '../../models/billing.models';
 import { BillingService } from '../../services/billing.service';

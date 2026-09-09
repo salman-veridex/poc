@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { APIMethod, APIResponseType, ApiRequestOptions } from './api-method.enum';
 
@@ -28,45 +28,54 @@ export class ApiService {
     const params = this.buildParams(options?.params);
     const headers = this.buildHeaders(options?.headers);
     const responseType = options?.responseType ?? APIResponseType.JSON;
+    const requestTimeout = options?.timeout ?? 250;
+
+    let request$: Observable<any>;
 
     switch (responseType) {
       case APIResponseType.BLOB:
-        return this.http.request(method, url, {
+        request$ = this.http.request(method, url, {
           body: options?.body,
           headers,
           params,
           withCredentials: options?.withCredentials,
           responseType: 'blob'
-        }) as unknown as Observable<T>;
+        });
+        break;
 
       case APIResponseType.TEXT:
-        return this.http.request(method, url, {
+        request$ = this.http.request(method, url, {
           body: options?.body,
           headers,
           params,
           withCredentials: options?.withCredentials,
           responseType: 'text'
-        }) as unknown as Observable<T>;
+        });
+        break;
 
       case APIResponseType.ARRAY_BUFFER:
-        return this.http.request(method, url, {
+        request$ = this.http.request(method, url, {
           body: options?.body,
           headers,
           params,
           withCredentials: options?.withCredentials,
           responseType: 'arraybuffer'
-        }) as unknown as Observable<T>;
+        });
+        break;
 
       case APIResponseType.JSON:
       default:
-        return this.http.request<T>(method, url, {
+        request$ = this.http.request<T>(method, url, {
           body: options?.body,
           headers,
           params,
           withCredentials: options?.withCredentials,
           responseType: 'json'
         });
+        break;
     }
+
+    return request$.pipe(timeout(requestTimeout)) as Observable<T>;
   }
 
   private resolveUrl(endpoint: string): string {

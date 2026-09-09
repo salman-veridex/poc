@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { ColDef, ICellRendererParams } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from '../../../../../shared/components/data-grid/data-grid.component';
 import { AppDatepickerComponent } from '../../../../../shared/components/app-datepicker/app-datepicker.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
@@ -181,5 +181,14 @@ export class SubmissionsListPage implements OnInit {
           this.submissions.set(this.allSubmissions.filter(s => !!s.submissionNumber));
         }
       });
+  }
+
+  theme:any='classic'
+
+  
+  changeoutlet(){
+
+    this.theme='modern-popup'
+
   }
 }

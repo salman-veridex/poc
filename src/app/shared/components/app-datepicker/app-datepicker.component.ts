@@ -33,7 +33,7 @@ export class AppDatepickerComponent implements OnInit, OnChanges, ControlValueAc
   // 🚀 [CLIENT DEMO TOGGLE]: Switch the UI Design Variant without touching consumer code!
   // 'classic'      -> Native Enterprise Input controls
   // 'modern-popup' -> Custom Floating Interactive Calendar & Time Picker UI
-  @Input() variant: 'classic' | 'modern-popup' = 'modern-popup';
+  @Input() variant: 'classic' | 'modern-popup' = 'classic';
 
   @Input('modern-popup')
   set isModernPopup(val: boolean | string) {

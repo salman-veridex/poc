@@ -19,4 +19,5 @@ export interface ApiRequestOptions {
   headers?: Record<string, string>;
   responseType?: APIResponseType;
   withCredentials?: boolean;
+  timeout?: number;
 }

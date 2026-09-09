@@ -2,38 +2,60 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
   ViewChild,
+  computed,
+  inject,
   signal
 } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular';
-import {
-  ColDef,
-  GridApi,
-  GridOptions,
-  GridReadyEvent,
-  RowClickedEvent,
-  RowDoubleClickedEvent,
-  SelectionChangedEvent
-} from 'ag-grid-community';
-import { DEFAULT_COL_DEF, DEFAULT_GRID_OPTIONS } from './data-grid.config';
-import { DataGridExportOptions, GridAction, GridSelectionMode } from './data-grid.types';
+import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { PrimeTemplate, SharedModule } from 'primeng/api';
+import { Table, TableCheckbox, TableHeaderCheckbox, TableModule, SortIcon, SortableColumn } from 'primeng/table';
+import { Button, ButtonModule } from 'primeng/button';
+import { InputText, InputTextModule } from 'primeng/inputtext';
+import { IconField, IconFieldModule } from 'primeng/iconfield';
+import { InputIcon, InputIconModule } from 'primeng/inputicon';
+import { Tooltip, TooltipModule } from 'primeng/tooltip';
+import { ColDef, DataGridExportOptions, GridAction, GridSelectionMode } from './data-grid.types';
 
 @Component({
   selector: 'app-data-grid',
   standalone: true,
-  imports: [CommonModule, AgGridAngular],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SharedModule,
+    PrimeTemplate,
+    TableModule,
+    Table,
+    TableHeaderCheckbox,
+    TableCheckbox,
+    SortIcon,
+    SortableColumn,
+    ButtonModule,
+    Button,
+    InputTextModule,
+    InputText,
+    IconFieldModule,
+    IconField,
+    InputIconModule,
+    InputIcon,
+    TooltipModule,
+    Tooltip
+  ],
   templateUrl: './data-grid.component.html',
   styleUrl: './data-grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridComponent<T = unknown> implements OnChanges {
-  @Input({ required: true }) columnDefs: ColDef[] = [];
+export class DataGridComponent<T extends Record<string, any> = Record<string, any>> implements OnChanges {
+  private sanitizer = inject(DomSanitizer);
+
+  @Input({ required: true }) columnDefs: ColDef<T>[] = [];
   @Input() rowData: T[] | null = [];
   @Input() loading = false;
   @Input() error: string | null = null;
@@ -57,84 +79,70 @@ export class DataGridComponent<T = unknown> implements OnChanges {
   @Output() rowDoubleClicked = new EventEmitter<T>();
   @Output() refreshClicked = new EventEmitter<void>();
 
-  @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
+  @ViewChild('dt') dt!: Table;
 
-  gridApi!: GridApi;
   searchTerm = signal<string>('');
-  selectedCount = signal<number>(0);
+  selectedRows = signal<T[]>([]);
   isDense = signal<boolean>(false);
 
-  defaultColDef: ColDef = DEFAULT_COL_DEF;
-  gridOptions: GridOptions = {
-    ...DEFAULT_GRID_OPTIONS,
-    headerHeight: 38,
-    rowHeight: 40
-  };
+  visibleColumns = computed(() => {
+    return (this.columnDefs || []).filter(col => !col.hide && col.field !== 'checkbox');
+  });
+
+  filterFields = computed(() => {
+    return this.visibleColumns()
+      .map(col => col.field)
+      .filter((field): field is string => !!field);
+  });
+
+  hasCheckboxSelection = computed(() => {
+    return (this.columnDefs || []).some(col => col.checkboxSelection || col.headerCheckboxSelection || col.field === 'checkbox');
+  });
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['pageSize'] && this.gridApi) {
-      this.gridApi.setGridOption('paginationPageSize', this.pageSize);
+    if (changes['rowData']) {
+      this.selectedRows.set([]);
     }
   }
 
-  onGridReady(params: GridReadyEvent): void {
-    this.gridApi = params.api;
-    if (this.pageSize) {
-      this.gridApi.setGridOption('paginationPageSize', this.pageSize);
-    }
+  onSelectionChange(rows: T[] | T | null): void {
+    const rowArray = Array.isArray(rows) ? rows : (rows ? [rows] : []);
+    this.selectedRows.set(rowArray);
+    this.rowSelected.emit(rowArray);
   }
 
-  onSelectionChanged(event: SelectionChangedEvent): void {
-    if (!this.gridApi) return;
-    const selected = this.gridApi.getSelectedRows() as T[];
-    this.selectedCount.set(selected.length);
-    this.rowSelected.emit(selected);
+  onRowClick(row: T): void {
+    this.rowClicked.emit(row);
   }
 
-  onRowClicked(event: RowClickedEvent): void {
-    if (event.data) {
-      this.rowClicked.emit(event.data as T);
-    }
-  }
-
-  onRowDoubleClicked(event: RowDoubleClickedEvent): void {
-    if (event.data) {
-      this.rowDoubleClicked.emit(event.data as T);
-    }
+  onRowDblClick(row: T): void {
+    this.rowDoubleClicked.emit(row);
   }
 
   onQuickFilterChanged(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = input.value;
+    const value = input.value || '';
     this.searchTerm.set(value);
-    if (this.gridApi) {
-      this.gridApi.setGridOption('quickFilterText', value);
+    if (this.dt) {
+      this.dt.filterGlobal(value, 'contains');
     }
   }
 
   clearSearch(): void {
     this.searchTerm.set('');
-    if (this.gridApi) {
-      this.gridApi.setGridOption('quickFilterText', '');
+    if (this.dt) {
+      this.dt.filterGlobal('', 'contains');
     }
   }
 
   toggleDensity(): void {
-    const nextDense = !this.isDense();
-    this.isDense.set(nextDense);
-    if (this.gridApi) {
-      this.gridApi.setGridOption('rowHeight', nextDense ? 32 : 40);
-      this.gridApi.setGridOption('headerHeight', nextDense ? 32 : 38);
-      this.gridApi.resetRowHeights();
-    }
+    this.isDense.update(dense => !dense);
   }
 
   exportCsv(options?: DataGridExportOptions): void {
-    if (!this.gridApi) return;
-    this.gridApi.exportDataAsCsv({
-      fileName: options?.fileName || `${this.title || 'veridex-export'}-${Date.now()}.csv`,
-      allColumns: options?.allColumns ?? true
-    });
+    if (this.dt) {
+      this.dt.exportCSV();
+    }
   }
 
   onRefresh(): void {
@@ -142,6 +150,42 @@ export class DataGridComponent<T = unknown> implements OnChanges {
   }
 
   getSelectedRows(): T[] {
-    return this.gridApi ? (this.gridApi.getSelectedRows() as T[]) : [];
+    return this.selectedRows();
+  }
+
+  getCellValue(row: T, col: ColDef<T>): SafeHtml | string {
+    const rawVal = col.field ? this.getNestedValue(row, col.field) : undefined;
+    let formatted: any = rawVal;
+
+    if (col.valueFormatter) {
+      formatted = col.valueFormatter({ value: rawVal, data: row, colDef: col });
+    } else if (col.cellRenderer) {
+      formatted = col.cellRenderer({ value: rawVal, data: row, colDef: col });
+    }
+
+    if (formatted === null || formatted === undefined) {
+      return '';
+    }
+
+    if (typeof formatted === 'string' && (formatted.includes('<') || formatted.includes('&'))) {
+      return this.sanitizer.bypassSecurityTrustHtml(formatted);
+    }
+
+    return String(formatted);
+  }
+
+  getCellStyle(row: T, col: ColDef<T>): Record<string, any> | null {
+    if (!col.cellStyle) return null;
+    if (typeof col.cellStyle === 'function') {
+      const rawVal = col.field ? this.getNestedValue(row, col.field) : undefined;
+      return col.cellStyle({ value: rawVal, data: row, colDef: col });
+    }
+    return col.cellStyle;
+  }
+
+  private getNestedValue(obj: any, path: string): any {
+    if (!obj || !path) return undefined;
+    if (path in obj) return obj[path];
+    return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
   }
 }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { ColDef } from 'ag-grid-community';
+import { ColDef } from '@shared/components/data-grid/data-grid.types';
 import { DataGridComponent } from './data-grid.component';
 
 interface MockInsuranceRow {
@@ -33,7 +33,7 @@ const mockRows: MockInsuranceRow[] = [
 ];
 
 const meta: Meta<DataGridComponent<MockInsuranceRow>> = {
-  title: 'Shared UI/Data Grid (AG Grid Quartz)',
+  title: 'Shared UI/Data Grid (PrimeNG Table)',
   component: DataGridComponent,
   tags: ['autodocs'],
   argTypes: {
